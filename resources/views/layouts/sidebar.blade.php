@@ -13,7 +13,7 @@
         currentPath: window.location.pathname,
         openSubmenus: {},
         init() {
-            // Auto-open Dashboard menu on page load
+            // Initialize active menu state on page load
             this.initializeActiveMenus();
         },
         normalizePath(path) {
@@ -234,11 +234,6 @@
                 @endforeach
             </div>
         </nav>
-
-        <!-- Sidebar Widget -->
-        <div x-data x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen" x-transition class="mt-auto">
-            @include('layouts.sidebar-widget')
-        </div>
 
     </div>
 </aside>
