@@ -1,3 +1,10 @@
+@php
+    $user = auth()->user();
+    $displayName = $user?->name ?? 'User';
+    $displayEmail = $user?->email ?? '';
+    $profilePhoto = $user?->profile_photo_path ? asset($user->profile_photo_path) : '/images/user/owner.png';
+@endphp
+
 <div class="relative" x-data="{
     dropdownOpen: false,
     toggleDropdown() {
@@ -14,10 +21,10 @@
         type="button"
     >
         <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-            <img src="/images/user/owner.png" alt="User" />
+            <img src="{{ $profilePhoto }}" alt="User" />
         </span>
 
-       <span class="block mr-1 font-medium text-theme-sm">Musharof</span>
+       <span class="block mr-1 font-medium text-theme-sm">{{ $displayName }}</span>
 
         <!-- Chevron Icon -->
         <svg
@@ -45,8 +52,8 @@
     >
         <!-- User Info -->
         <div>
-            <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">Musharof Chowdhury</span>
-            <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">randomuser@pimjo.com</span>
+            <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">{{ $displayName }}</span>
+            <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">{{ $displayEmail }}</span>
         </div>
 
         <!-- Menu Items -->
@@ -108,10 +115,10 @@
         </ul>
 
         <!-- Sign Out -->
-        {{-- <form method="POST" action="#">
-            @csrf --}}
-            <a
-                href="/signin"
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button
+                type="submit"
                 class="flex items-center w-full gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                 @click="closeDropdown()"
             >
@@ -121,8 +128,8 @@
                     </svg>
                 </span>
                 Sign out
-            </a>
-        {{-- </form> --}}
+            </button>
+        </form>
     </div>
     <!-- Dropdown End -->
 </div>

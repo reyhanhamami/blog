@@ -1,12 +1,22 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+    Route::get('/signin', fn () => redirect()->route('login'))->name('signin');
+});
+
+Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
 // dashboard pages
-Route::get('/', function () {
+Route::get('/', fn () => redirect()->route('dashboard'))->middleware('auth');
+
+Route::get('/dashboard', function () {
     return view('pages.dashboard.ecommerce', ['title' => 'E-commerce Dashboard']);
-})->name('dashboard');
+})->middleware('auth')->name('dashboard');
 
 // calender pages
 Route::get('/calendar', function () {
@@ -16,7 +26,7 @@ Route::get('/calendar', function () {
 // profile pages
 Route::get('/profile', function () {
     return view('pages.profile', ['title' => 'Profile']);
-})->name('profile');
+})->middleware('auth')->name('profile');
 
 // form pages
 Route::get('/form-elements', function () {
@@ -26,7 +36,11 @@ Route::get('/form-elements', function () {
 // tables pages
 Route::get('/basic-tables', function () {
     return view('pages.tables.basic-tables', ['title' => 'Basic Tables']);
-})->name('basic-tables');
+})->middleware('auth')->name('basic-tables');
+
+Route::get('/tables', function () {
+    return view('pages.tables.basic-tables', ['title' => 'Basic Tables']);
+})->middleware('auth')->name('tables');
 
 // pages
 
@@ -49,14 +63,9 @@ Route::get('/bar-chart', function () {
 })->name('bar-chart');
 
 
-// authentication pages
-Route::get('/signin', function () {
-    return view('pages.auth.signin', ['title' => 'Sign In']);
-})->name('signin');
-
 Route::get('/signup', function () {
     return view('pages.auth.signup', ['title' => 'Sign Up']);
-})->name('signup');
+})->middleware('guest')->name('signup');
 
 // ui elements pages
 Route::get('/alerts', function () {
@@ -82,7 +91,6 @@ Route::get('/image', function () {
 Route::get('/videos', function () {
     return view('pages.ui-elements.videos', ['title' => 'Videos']);
 })->name('videos');
-
 
 
 
