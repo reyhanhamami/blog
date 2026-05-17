@@ -1,8 +1,8 @@
 @php
     $user = auth()->user();
-    $displayName = $user?->name ?? 'User';
+    $displayName = $user?->display_name ?? 'User';
     $displayEmail = $user?->email ?? '';
-    $profilePhoto = $user?->profile_photo_path ? asset($user->profile_photo_path) : '/images/user/owner.png';
+    $profilePhoto = $user?->profile_photo_url ?? asset('images/user/owner.jpg');
 @endphp
 
 <div class="relative" x-data="{
