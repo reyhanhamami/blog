@@ -16,7 +16,7 @@
     {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
 
     <!-- Theme Store -->
-    <script>
+    <script data-navigate-once>
         document.addEventListener('alpine:init', () => {
             Alpine.store('theme', {
                 init() {
@@ -77,7 +77,7 @@
     </script>
 
     <!-- Apply dark mode immediately to prevent flash -->
-    <script>
+    <script data-navigate-once>
         (function() {
             const savedTheme = localStorage.getItem('theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -112,9 +112,16 @@
     <x-common.preloader/>
     {{-- preloader end --}}
 
+    <div data-navigate-indicator
+        class="pointer-events-none fixed right-4 top-4 z-999999 hidden rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark dark:text-gray-300">
+        Loading...
+    </div>
+
     <div class="min-h-screen xl:flex">
-        @include('layouts.backdrop')
-        @include('layouts.sidebar')
+        @persist('tailadmin-sidebar')
+            @include('layouts.backdrop')
+            @include('layouts.sidebar')
+        @endpersist
 
         <div class="flex-1 transition-all duration-300 ease-in-out"
             :class="{
@@ -123,9 +130,11 @@
                 'ml-0': $store.sidebar.isMobileOpen
             }">
             <!-- app header start -->
-            @include('layouts.app-header')
+            @persist('tailadmin-header')
+                @include('layouts.app-header')
+            @endpersist
             <!-- app header end -->
-            <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+            <div data-page-content class="p-4 mx-auto max-w-(--breakpoint-2xl) transition duration-150 ease-out md:p-6">
                 @yield('content')
             </div>
         </div>
