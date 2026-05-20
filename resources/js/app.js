@@ -1,5 +1,6 @@
 import './bootstrap';
 import ApexCharts from 'apexcharts';
+import { createPopper } from '@popperjs/core';
 
 // flatpickr
 import flatpickr from 'flatpickr';
@@ -10,6 +11,7 @@ import { Calendar } from '@fullcalendar/core';
 
 
 window.ApexCharts = ApexCharts;
+window.createPopper = createPopper;
 window.flatpickr = flatpickr;
 window.FullCalendar = Calendar;
 
@@ -66,6 +68,25 @@ const setNavigateLoading = (loading) => {
     content?.classList.toggle('translate-y-1', loading);
     indicator?.classList.toggle('hidden', !loading);
 };
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[wire\\:navigate], a[wire\\:navigate\\.hover]');
+
+    if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+    }
+
+    const url = new URL(link.href, window.location.href);
+
+    if (url.origin !== window.location.origin || link.target || link.getAttribute('href')?.startsWith('#')) {
+        return;
+    }
+
+    if (window.Livewire?.navigate) {
+        event.preventDefault();
+        window.Livewire.navigate(url.toString());
+    }
+});
 
 document.addEventListener('DOMContentLoaded', initializeTailAdminPage);
 document.addEventListener('livewire:navigate', () => setNavigateLoading(true));
