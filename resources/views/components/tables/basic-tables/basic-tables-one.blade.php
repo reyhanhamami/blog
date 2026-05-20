@@ -50,9 +50,9 @@
 @endphp
 
 <div>
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
         <div class="max-w-full overflow-x-auto custom-scrollbar">
-            <table class="w-full min-w-[1102px]">
+            <table class="w-full min-w-275.5">
                 <thead>
                     <tr class="border-b border-gray-100 dark:border-gray-800">
                         <th class="px-5 py-3 text-left sm:px-6">
