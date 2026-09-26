@@ -23,6 +23,9 @@ let currentEditor = null;
 function initPage() {
     initEditor();
     initNumericMasks();
+    document.querySelector('[data-select-all]')?.addEventListener('change', event => {
+        document.querySelectorAll('input[name="ids[]"]:not(:disabled)').forEach(input => { input.checked = event.target.checked; });
+    });
     document.querySelectorAll('[data-search-select]').forEach(element => {
         if (element.tomselect) return;
         selects.add(new TomSelect(element, { plugins: element.multiple ? ['remove_button'] : ['clear_button'], create: false, allowEmptyOption: true }));

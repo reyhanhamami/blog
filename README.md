@@ -42,7 +42,7 @@ php artisan route:list
 
 ## Modul
 
-CMS menyediakan artikel dengan status editorial, revisi, Trash, preview privat, SEO, kategori, tag, topik, penulis, gambar, video YouTube, kuis, jalur belajar, kelas, tanya jawab, halaman statis, menu, pengguna, pengaturan, redirect, kalender editorial, dan analitik dasar. Blog publik menyediakan artikel, arsip, pencarian, RSS, sitemap, akun pembaca, bookmark, riwayat baca, dan progres pelajaran.
+CMS menyediakan artikel dengan status editorial, aksi massal, revisi, Trash, preview privat, SEO, kategori, tag, topik, penulis, gambar, video YouTube, kuis, jalur belajar, kelas, tanya jawab, halaman statis, menu, pengguna, pengaturan, redirect, kalender editorial, dan analitik dasar. Blog publik menyediakan artikel, arsip, pencarian, RSS, sitemap, akun pembaca, bookmark, riwayat baca, dan progres pelajaran.
 
 Input angka CMS memakai mask reusable (`integer` sebagai default, serta `quantity`, `decimal`, `duration`, `percentage`, `currency`, `money`, dan `price` lewat atribut `data-numeric-mask`). Pemisah ribuan dan simbol mata uang hanya tampil di form; nilai yang dikirim ke server tetap numerik.
 

@@ -59,3 +59,19 @@ test('scheduled article is published by scheduler', function () {
     expect($post->fresh()->status)->toBe('published');
     $this->get('/terjadwal')->assertOk();
 });
+
+test('bulk post actions enforce permissions and update selected posts', function () {
+    $author = User::factory()->create(['role' => 'author']);
+    $editor = User::factory()->create(['role' => 'editor']);
+    $first = Post::create(['title' => 'Satu', 'slug' => 'satu', 'status' => 'draft', 'created_by' => $author->id]);
+    $second = Post::create(['title' => 'Dua', 'slug' => 'dua', 'status' => 'draft', 'created_by' => $author->id]);
+    $payload = ['ids' => [$first->id, $second->id], 'action' => 'publish'];
+    $this->actingAs($author)->post(route('admin.posts.bulk'), $payload)->assertForbidden();
+    expect($first->fresh()->status)->toBe('draft');
+    $this->actingAs($editor)->post(route('admin.posts.bulk'), $payload)->assertRedirect();
+    expect($first->fresh()->status)->toBe('published');
+    expect($second->fresh()->published_at)->not->toBeNull();
+    $this->actingAs($editor)->post(route('admin.posts.bulk'), ['ids' => [$first->id], 'action' => 'trash'])->assertRedirect();
+    expect(Post::find($first->id))->toBeNull();
+    expect(Post::find($second->id))->not->toBeNull();
+});

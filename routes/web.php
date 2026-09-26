@@ -114,6 +114,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
     Route::delete('/posts/{post}/sources/{source}', [PostSourceController::class, 'destroy'])->name('posts.sources.destroy');
     Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+    Route::post('/posts/bulk', [PostController::class, 'bulk'])->name('posts.bulk');
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::patch('/posts/{post}', [PostController::class, 'update'])->name('posts.update');

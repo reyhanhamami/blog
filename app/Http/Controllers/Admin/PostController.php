@@ -41,7 +41,7 @@ class PostController extends Controller
         $sort = in_array($request->get('sort'), ['title', 'created_at', 'published_at'], true) ? $request->sort : 'created_at';
         $posts = $query->orderBy($sort, $request->get('dir') === 'asc' ? 'asc' : 'desc')->paginate(in_array((int) $request->get('per_page'), [15, 25, 50, 100], true) ? (int) $request->per_page : 15)->withQueryString();
 
-        return view('admin.posts.index', compact('posts') + ['categories' => Category::orderBy('name')->get()]);
+        return view('admin.posts.index', compact('posts') + ['categories' => Category::orderBy('name')->get(), 'authors' => Author::orderBy('name')->get()]);
     }
 
     public function bulk(Request $request)
@@ -85,6 +85,7 @@ class PostController extends Controller
 
         return back()->with('success', $posts->count().' artikel berhasil diproses.');
     }
+
     public function create()
     {
         Gate::authorize('create', Post::class);
