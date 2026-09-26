@@ -5,7 +5,7 @@
 <form method="post" action="{{ $item->exists ? route('admin.'.$module.'.update', $item->id) : route('admin.'.$module.'.store') }}" class="card max-w-3xl space-y-5">@csrf @if($item->exists) @method('PATCH') @endif
 @foreach($config['fields'] as $field => $type)
 <div><label class="form-label" for="{{ $field }}">{{ ucfirst(str_replace('_', ' ', $field)) }} @if(in_array($field, ['name','title','youtube_id','status'])) * @endif</label>
-@if($type === 'textarea')<textarea class="form-input" data-search-select name="{{ $field }}" id="{{ $field }}" rows="4">{{ old($field, $item->$field) }}</textarea>
+@if($type === 'textarea')<textarea class="form-input" name="{{ $field }}" id="{{ $field }}" rows="4">{{ old($field, $item->$field) }}</textarea>
 @elseif($type === 'checkbox')<label class="flex items-center gap-2"><input type="checkbox" name="{{ $field }}" value="1" @checked(old($field, $item->$field ?? true))> Aktif</label>
 @elseif($type === 'category')<select class="form-input" data-search-select name="{{ $field }}" id="{{ $field }}"><option value="">Tanpa induk</option>@foreach($parents as $parent)@if($parent->id !== $item->id)<option value="{{ $parent->id }}" @selected(old($field, $item->$field) == $parent->id)>{{ $parent->name }}</option>@endif @endforeach</select>
 @elseif($type === 'status')<select class="form-input" data-search-select name="{{ $field }}" id="{{ $field }}">@foreach(['draft','published'] as $status)<option value="{{ $status }}" @selected(old($field, $item->$field ?: 'draft') === $status)>{{ ucfirst($status) }}</option>@endforeach</select>

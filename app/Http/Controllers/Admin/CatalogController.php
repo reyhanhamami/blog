@@ -127,7 +127,7 @@ class CatalogController extends Controller
                 'text' => [in_array($field, ['name', 'title']) ? 'required' : 'nullable', 'string', 'max:191'],
                 'textarea' => ['nullable', 'string', 'max:10000'],
                 'url' => ['nullable', 'url', 'max:2048'],
-                'number' => ['nullable', 'integer', 'min:0', 'max:100000'],
+                'number' => ['nullable', 'integer', 'min:0', 'max:'.($field === 'passing_score' ? 100 : 100000)],
                 'category' => ['nullable', 'exists:categories,id'],
                 'status' => ['required', Rule::in(['draft', 'published'])],
                 'youtube' => ['required', 'string', 'max:2048'],

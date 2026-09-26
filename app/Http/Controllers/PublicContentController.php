@@ -185,7 +185,11 @@ class PublicContentController extends Controller
 
     public function robots()
     {
-        return response("User-agent: *\nDisallow: /admin\nDisallow: /cari\nSitemap: ".url('/sitemap.xml')."\n", 200, ['Content-Type' => 'text/plain']);
+        $body = config('app.env') === 'production'
+            ? "User-agent: *\nDisallow: /admin\nDisallow: /cari\nSitemap: ".url('/sitemap.xml')."\n"
+            : "User-agent: *\nDisallow: /\n";
+
+        return response($body, 200, ['Content-Type' => 'text/plain']);
     }
 
     public function feedback(Request $request, Post $post)

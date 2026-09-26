@@ -22,12 +22,28 @@ class RedirectController extends Controller
         Gate::authorize('manage-system');
         $data = $request->validate(['from_path' => ['required', 'string', 'max:191', 'unique:redirects,from_path'], 'to_path' => ['required', 'string', 'max:191'], 'status_code' => ['required', 'in:301,302']]);
         foreach (['from_path', 'to_path'] as $field) {
-            if (! str_starts_with($data[$field], '/') || str_starts_with($data[$field], '//')) {
+            if (! str_starts_with($data[$field], '/') || str_starts_with($data[$field], '//') || str_contains($data[$field], chr(92)) || preg_match('/[[:cntrl:][:space:]]/', $data[$field])) {
                 throw ValidationException::withMessages([$field => 'Gunakan path lokal yang diawali satu garis miring.']);
             }
         }
         if ($data['from_path'] === $data['to_path']) {
             throw ValidationException::withMessages(['to_path' => 'Tujuan harus berbeda dari sumber.']);
+        }
+        $visited = [$data['from_path'] => true];
+        $cursor = $data['to_path'];
+        for ($hop = 0; $hop < 20; $hop++) {
+            if (isset($visited[$cursor])) {
+                throw ValidationException::withMessages(['to_path' => 'Tujuan membuat loop redirect.']);
+            }
+            $visited[$cursor] = true;
+            $next = DB::table('redirects')->where('from_path', $cursor)->value('to_path');
+            if (! $next) {
+                break;
+            }
+            $cursor = $next;
+        }
+        if ($hop === 20) {
+            throw ValidationException::withMessages(['to_path' => 'Rantai redirect terlalu panjang.']);
         }
         DB::table('redirects')->insert($data + ['created_at' => now(), 'updated_at' => now()]);
 

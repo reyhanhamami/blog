@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class MediaController extends Controller
 {
@@ -25,6 +26,9 @@ class MediaController extends Controller
         Gate::authorize('manage-content');
         $data = $request->validate(['file' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'], 'alt_text' => ['required', 'string', 'max:191'], 'caption' => ['nullable', 'string', 'max:1000']]);
         $file = $data['file'];
+        if (preg_match('/(?:^|\.)(?:php|phtml|phar)(?:\.|$)/i', $file->getClientOriginalName())) {
+            throw ValidationException::withMessages(['file' => 'Nama file tidak diizinkan.']);
+        }
         $folder = 'uploads/'.now()->format('Y/m');
         File::ensureDirectoryExists(public_path($folder));
         $filename = Str::random(40).'.'.$file->guessExtension();

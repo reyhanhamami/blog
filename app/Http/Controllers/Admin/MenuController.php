@@ -66,7 +66,7 @@ class MenuController extends Controller
     private function save(Request $request, Menu $menu, MenuItem $item): void
     {
         $data = $request->validate(['label' => ['required', 'string', 'max:191'], 'url' => ['required', 'string', 'max:2048'], 'sort_order' => ['required', 'integer', 'min:0'], 'parent_id' => ['nullable', 'exists:menu_items,id']]);
-        if (! (str_starts_with($data['url'], '/') && ! str_starts_with($data['url'], '//')) && ! preg_match('~^https://~i', $data['url'])) {
+        if (str_contains($data['url'], chr(92)) || preg_match('/[[:cntrl:][:space:]]/', $data['url']) || (! (str_starts_with($data['url'], '/') && ! str_starts_with($data['url'], '//')) && ! preg_match('~^https://~i', $data['url']))) {
             throw ValidationException::withMessages(['url' => 'Gunakan path lokal atau URL HTTPS.']);
         }
         if (($data['parent_id'] ?? null) && (! $menu->items()->whereKey($data['parent_id'])->exists() || $item->id == $data['parent_id'])) {

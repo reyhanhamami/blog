@@ -11,7 +11,22 @@
 
 @php $crumbs = [['@type'=>'ListItem','position'=>1,'name'=>'Beranda','item'=>route('home')], ['@type'=>'ListItem','position'=>2,'name'=>$post->title,'item'=>url('/'.$post->slug)]]; $breadcrumbSchema = ['@context'=>'https://schema.org','@type'=>'BreadcrumbList','itemListElement'=>$crumbs]; @endphp
 <script type="application/ld+json">{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
-@php $schema = ['@context'=>'https://schema.org','@type'=>'Article','headline'=>$post->title,'description'=>$post->seo_description ?: $post->excerpt,'datePublished'=>$post->published_at?->toAtomString(),'dateModified'=>$post->updated_at?->toAtomString(),'author'=>['@type'=>'Person','name'=>$post->author?->name ?? 'Tim Besofton'],'publisher'=>['@type'=>'Organization','name'=>'Besofton'],'mainEntityOfPage'=>url('/'.$post->slug)]; @endphp
+@php
+$schema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Article',
+    'headline' => $post->title,
+    'description' => $post->seo_description ?: $post->excerpt ?: \Illuminate\Support\Str::limit($post->content_plain ?: strip_tags($post->content ?? '') ?: $post->title, 155),
+    'datePublished' => $post->published_at?->toAtomString(),
+    'dateModified' => $post->updated_at?->toAtomString(),
+    'author' => ['@type' => 'Person', 'name' => $post->author?->name ?? 'Tim Besofton'],
+    'publisher' => ['@type' => 'Organization', 'name' => \App\Models\Setting::valueFor('site_name', 'Besofton Insights')],
+    'mainEntityOfPage' => url('/'.$post->slug),
+];
+if ($post->featured_image) {
+    $schema['image'] = $post->featured_image;
+}
+@endphp
 <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
 @endpush
 @section('content')

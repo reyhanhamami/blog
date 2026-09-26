@@ -5,12 +5,12 @@ $siteName = Setting::valueFor('site_name', 'Besofton Insights'); ?>
 <!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>@yield('seo_title', $siteName.' | Artikel dan tutorial teknologi')</title>
 <meta name="description" content="@yield('seo_description', \App\Models\Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
-<meta name="robots" content="@yield('robots', 'index,follow')">
+<meta name="robots" content="{{ config('app.env') === 'production' ? trim($__env->yieldContent('robots', 'index,follow')) : 'noindex,nofollow' }}">
 <link rel="canonical" href="@yield('canonical', url()->current())">
 <link rel="icon" href="{{ \App\Models\Setting::valueFor('favicon_url', asset('favicon.svg')) }}">
 @if(\App\Models\Setting::valueFor('google_verification'))<meta name="google-site-verification" content="{{ \App\Models\Setting::valueFor('google_verification') }}">@endif
 <meta property="og:type" content="@yield('og_type', 'website')"><meta property="og:title" content="@yield('og_title', $siteName)"><meta property="og:description" content="@yield('og_description', \App\Models\Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))"><meta property="og:url" content="@yield('canonical', url()->current())">
-@hasSection('og_image')<meta property="og:image" content="@yield('og_image')"><meta name="twitter:card" content="summary_large_image">@endif
+@if(trim($__env->yieldContent('og_image')) !== '')<meta property="og:image" content="@yield('og_image')"><meta name="twitter:card" content="summary_large_image">@endif
 @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))) @vite(['resources/css/app.css','resources/js/app.js']) @endif
 <?php $siteSchema = ['@context' => 'https://schema.org', '@graph' => [['@type' => 'Organization', 'name' => $siteName, 'url' => route('home')], ['@type' => 'WebSite', 'name' => $siteName, 'url' => route('home')]]]; ?>
 <script type="application/ld+json">{!! json_encode($siteSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
