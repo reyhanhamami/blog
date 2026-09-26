@@ -1,0 +1,10 @@
+@extends('admin.layout')
+@section('title', $question->exists ? 'Edit Pertanyaan' : 'Buat Pertanyaan')
+@section('content')
+<a wire:navigate href="{{ route('admin.quizzes.questions.index', $quiz) }}" class="text-sm text-indigo-700">← Kembali</a><h1 class="my-6 text-3xl font-bold">{{ $question->exists ? 'Edit' : 'Buat' }} pertanyaan</h1>
+<form method="post" action="{{ $question->exists ? route('admin.quizzes.questions.update', [$quiz, $question]) : route('admin.quizzes.questions.store', $quiz) }}" class="card max-w-3xl space-y-5">@csrf @if($question->exists) @method('PATCH') @endif
+<div><label class="form-label">Pertanyaan *</label><textarea class="form-input" name="question" required rows="3">{{ old('question', $question->question) }}</textarea>@error('question')<p class="error">{{ $message }}</p>@enderror</div>
+<div><label class="form-label">Urutan</label><input class="form-input" type="number" name="sort_order" min="0" value="{{ old('sort_order', $question->sort_order ?? 0) }}"></div>
+<fieldset><legend class="mb-3 font-semibold">Empat pilihan jawaban *</legend>@for($i=0;$i<4;$i)<div class="mb-3 flex items-center gap-3"><input type="radio" name="correct" value="{{ $i }}" required @checked(old('correct', $question->exists ? $question->options->values()->search(fn($option) => $option->is_correct) : 0) == $i) aria-label="Jawaban benar pilihan {{ $i+1 }}"><input class="form-input" name="options[{{ $i }}]" required placeholder="Pilihan {{ $i+1 }}" value="{{ old('options.'.$i, $question->exists ? $question->options->values()->get($i)?->label : '') }}"></div>@endfor<p class="text-xs text-slate-500">Pilih radio di sebelah jawaban yang benar.</p>@error('options')<p class="error">{{ $message }}</p>@enderror</fieldset>
+<div class="flex gap-3 border-t border-slate-100 pt-5"><button class="btn-primary">Simpan pertanyaan</button><a wire:navigate href="{{ route('admin.quizzes.questions.index', $quiz) }}" class="btn-secondary">Batal</a></div></form>
+@endsection

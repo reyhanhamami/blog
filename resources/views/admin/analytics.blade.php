@@ -1,0 +1,5 @@
+@extends('admin.layout')
+@section('title', 'Analitik')
+@section('content')
+<h1 class="text-3xl font-bold">Analitik konten</h1><p class="mt-2 text-sm text-slate-500">Data internal yang tercatat di aplikasi.</p><div class="mt-6 grid gap-4 md:grid-cols-3"><div class="card"><p class="text-slate-500">Tayangan artikel</p><p class="mt-2 text-3xl font-bold">{{ number_format($views, 0, ',', '.') }}</p></div><div class="card"><p class="text-slate-500">Percobaan kuis</p><p class="mt-2 text-3xl font-bold">{{ number_format($attempts, 0, ',', '.') }}</p></div><div class="card"><p class="text-slate-500">Suara membantu</p><p class="mt-2 text-3xl font-bold">{{ number_format($helpful, 0, ',', '.') }}</p></div></div><section class="card mt-6"><h2 class="text-xl font-bold">Artikel teratas</h2>@forelse($top as $post)<div class="flex justify-between border-b border-slate-100 py-3"><a wire:navigate href="{{ route('admin.posts.edit', $post) }}" class="text-indigo-700">{{ $post->title }}</a><span>{{ number_format($post->views, 0, ',', '.') }} tayangan</span></div>@empty<p class="mt-4 text-slate-500">Belum ada tayangan.</p>@endforelse</section>
+@endsection

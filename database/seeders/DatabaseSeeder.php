@@ -2,37 +2,33 @@
 
 namespace Database\Seeders;
 
+use App\Models\Menu;
+use App\Models\Page;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@gmail.com'],
-            [
-                'name' => 'Reyhan',
-                'first_name' => 'Reyhan',
-                'last_name' => 'Hamami',
-                'job_title' => 'Fullstack developer',
-                'phone' => '+09 363 398 46',
-                'bio' => 'Fullstack developer',
-                'facebook_url' => 'https://facebook.com/reyhanhamami',
-                'x_url' => 'https://x.com/reyhanhamami',
-                'linkedin_url' => 'https://linkedin.com/reyhanhamami',
-                'instagram_url' => 'https://instagram.com/reyhanhamami',
-                'dribbble_url' => 'https://dribbble.com/reyhanhamami',
-                'country' => 'Indonesia',
-                'city_state' => 'Depok',
-                'postal_code' => '2489',
-                'tax_id' => '-',
-                'password' => bcrypt('asddsa123'),
-            ]
-        );
+        User::firstOrCreate(['email' => env('SEED_ADMIN_EMAIL', 'admin@gmail.com')], [
+            'name' => 'Besofton Admin',
+            'role' => 'superadmin',
+            'password' => Hash::make(env('SEED_DEFAULT_PASSWORD', 'asddsa123')),
+        ]);
+        foreach ([
+            'about' => ['Tentang Besofton Insights', '<p>Besofton Insights adalah ruang berbagi pengetahuan teknologi, tutorial, dan pengalaman praktis dari tim Besofton.</p>'],
+            'privacy-policy' => ['Kebijakan Privasi', '<p>Kami menggunakan data akun untuk menyediakan bookmark, riwayat baca, dan progres belajar. Data tidak dijual kepada pihak lain. Hubungi tim Besofton untuk permintaan terkait data pribadi Anda.</p>'],
+            'editorial-policy' => ['Kebijakan Editorial', '<p>Konten dibuat oleh penulis Besofton dan ditinjau sebelum diterbitkan. Kami memperbarui artikel ketika ada perubahan fakta atau teknologi. Koreksi dapat diajukan melalui halaman kontak. Bantuan AI, bila digunakan, tetap diperiksa oleh manusia sebelum publikasi.</p>'],
+        ] as $slug => [$title, $content]) {
+            Page::firstOrCreate(['slug' => $slug], ['title' => $title, 'content' => $content, 'is_published' => true]);
+        }
+        foreach (['header' => ['Beranda' => '/', 'Cari' => '/cari'], 'footer' => ['Tentang' => '/about', 'Privasi' => '/privacy-policy', 'Kebijakan editorial' => '/editorial-policy']] as $location => $links) {
+            $menu = Menu::firstOrCreate(['location' => $location], ['name' => ucfirst($location).' Menu']);
+            foreach ($links as $label => $url) {
+                $menu->items()->firstOrCreate(['url' => $url], ['label' => $label, 'sort_order' => 0, 'is_active' => true]);
+            }
+        }
     }
 }

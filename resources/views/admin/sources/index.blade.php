@@ -1,0 +1,5 @@
+@extends('admin.layout')
+@section('title', 'Referensi Artikel')
+@section('content')
+<a wire:navigate href="{{ route('admin.posts.edit', $post) }}" class="text-sm text-indigo-700">← Kembali ke artikel</a><div class="my-6 flex justify-between gap-3"><h1 class="text-3xl font-bold">Referensi: {{ $post->title }}</h1><a wire:navigate href="{{ route('admin.posts.sources.create', $post) }}" class="btn-primary">+ Referensi</a></div><div class="card">@forelse($post->sources as $source)<div class="flex justify-between gap-3 border-b border-slate-100 py-3"><div><p class="font-semibold">{{ $source->title }}</p><p class="text-sm text-slate-500">{{ $source->publisher }} · {{ $source->url }}</p></div><div class="flex gap-3"><a wire:navigate href="{{ route('admin.posts.sources.edit', [$post, $source]) }}" class="text-indigo-700">Edit</a><form action="{{ route('admin.posts.sources.destroy', [$post, $source]) }}" method="post" data-confirm="Hapus referensi ini?">@csrf @method('DELETE')<button class="text-red-700">Hapus</button></form></div></div>@empty<p class="text-slate-500">Belum ada referensi.</p>@endforelse</div>
+@endsection

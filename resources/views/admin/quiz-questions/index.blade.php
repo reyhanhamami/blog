@@ -1,0 +1,6 @@
+@extends('admin.layout')
+@section('title', 'Pertanyaan Kuis')
+@section('content')
+<a wire:navigate href="{{ route('admin.quizzes.edit', $quiz->id) }}" class="text-sm text-indigo-700">← Kembali ke kuis</a><div class="my-6 flex items-center justify-between gap-3"><div><h1 class="text-3xl font-bold">Pertanyaan: {{ $quiz->title }}</h1><p class="text-sm text-slate-500">{{ $quiz->questions->count() }} pertanyaan</p></div><a wire:navigate href="{{ route('admin.quizzes.questions.create', $quiz) }}" class="btn-primary">+ Pertanyaan</a></div>
+<div class="card">@forelse($quiz->questions as $question)<div class="flex flex-wrap justify-between gap-3 border-b border-slate-100 py-4"><div><p class="font-semibold">{{ $loop->iteration }}. {{ $question->question }}</p><p class="mt-1 text-xs text-slate-500">{{ $question->options->count() }} pilihan</p></div><div class="flex gap-3"><a wire:navigate href="{{ route('admin.quizzes.questions.edit', [$quiz, $question]) }}" class="text-indigo-700">Edit</a><form action="{{ route('admin.quizzes.questions.destroy', [$quiz, $question]) }}" method="post" data-confirm="Hapus pertanyaan ini?">@csrf @method('DELETE')<button class="text-red-700">Hapus</button></form></div></div>@empty<p class="py-6 text-slate-500">Belum ada pertanyaan. Tambahkan pertanyaan sebelum mempublikasikan kuis.</p>@endforelse</div>
+@endsection

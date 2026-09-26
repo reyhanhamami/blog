@@ -1,0 +1,6 @@
+@extends('admin.layout')
+@section('title', $lesson->exists ? 'Edit Pelajaran' : 'Buat Pelajaran')
+@section('content')
+<a wire:navigate href="{{ route('admin.courses.content.index', $course) }}" class="text-sm text-indigo-700">← Kembali</a><h1 class="my-6 text-3xl font-bold">{{ $lesson->exists ? 'Edit' : 'Buat' }} pelajaran · {{ $module->title }}</h1>
+<form method="post" action="{{ $lesson->exists ? route('admin.courses.lessons.update', [$course, $module, $lesson]) : route('admin.courses.lessons.store', [$course, $module]) }}" class="card max-w-4xl space-y-5">@csrf @if($lesson->exists) @method('PATCH') @endif<div><label class="form-label">Judul *</label><input class="form-input" name="title" value="{{ old('title', $lesson->title) }}" required>@error('title')<p class="error">{{ $message }}</p>@enderror</div><div><label class="form-label">Urutan *</label><input class="form-input" name="sort_order" type="number" min="0" value="{{ old('sort_order', $lesson->sort_order ?? 0) }}" required></div><div><label class="form-label">Konten HTML</label><textarea class="form-input font-mono" name="content" rows="18">{{ old('content', $lesson->content) }}</textarea><p class="text-xs text-slate-500">HTML dibersihkan saat disimpan.</p></div><button class="btn-primary">Simpan pelajaran</button></form>
+@endsection

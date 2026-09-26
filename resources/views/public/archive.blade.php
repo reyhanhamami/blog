@@ -1,0 +1,19 @@
+@extends('public.layout')
+@section('seo_title', $title.' | Besofton Insights')
+@section('seo_description', $description ?: $title.' di Besofton Insights')
+@section('robots', $noindex ? 'noindex,follow' : 'index,follow')
+@push('head')
+@if(isset($entity) && $entity instanceof \App\Models\Author)
+@php $authorSchema = ['@context'=>'https://schema.org','@type'=>'ProfilePage','mainEntity'=>['@type'=>'Person','name'=>$entity->name,'description'=>$entity->short_bio,'url'=>route('author.show', $entity)]]; @endphp
+<script type="application/ld+json">{!! json_encode($authorSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+@endif
+@endpush
+@section('content')
+<nav aria-label="Breadcrumb" class="mb-5 text-sm text-slate-500"><a wire:navigate href="{{ route('home') }}">Beranda</a> / {{ $title }}</nav><h1 class="text-4xl font-bold">{{ $title }}</h1>@if($description)<p class="mt-4 max-w-3xl text-slate-600">{{ $description }}</p>@endif
+@if(isset($entity) && $entity instanceof \App\Models\Author)<div class="mt-6 max-w-3xl"><p class="font-semibold">{{ $entity->job_title }}</p><p class="mt-3 whitespace-pre-line text-slate-600">{{ $entity->full_bio ?: $entity->short_bio }}</p><div class="mt-4 flex gap-4 text-sm text-indigo-700">@foreach(['website' => 'Website', 'github_url' => 'GitHub', 'linkedin_url' => 'LinkedIn', 'youtube_url' => 'YouTube'] as $field => $label)@if($entity->$field)<a href="{{ $entity->$field }}" rel="noopener noreferrer" target="_blank">{{ $label }}</a>@endif @endforeach</div></div>@endif
+@if(isset($entity) && $entity instanceof \App\Models\Topic)@php $relatedTopics = \App\Models\Topic::whereKeyNot($entity->id)->orderBy('name')->take(6)->get(); $topicPaths = \App\Models\LearningPath::where('status','published')->where('title','like','%'.$entity->name.'%')->take(3)->get(); @endphp @if($relatedTopics->isNotEmpty())<div class="mt-6 flex flex-wrap gap-2">@foreach($relatedTopics as $relatedTopic)<a wire:navigate href="{{ route('topic.show', $relatedTopic) }}" class="rounded-full border border-slate-300 px-3 py-1 text-sm">{{ $relatedTopic->name }}</a>@endforeach</div>@endif @if($topicPaths->isNotEmpty())<section class="mt-8"><h2 class="text-xl font-bold">Jalur belajar</h2>@foreach($topicPaths as $path)<a wire:navigate href="{{ route('path.show', $path) }}" class="mt-3 block text-indigo-700">{{ $path->title }}</a>@endforeach</section>@endif @endif
+@if($search !== null)<form action="{{ route('search') }}" class="mt-8 flex max-w-xl gap-2"><input class="form-input" name="q" value="{{ $search }}" type="search" placeholder="Cari artikel"><select class="form-input max-w-36" name="type"><option value="all">Semua</option><option value="articles" @selected(($type ?? '') === 'articles')>Artikel</option><option value="videos" @selected(($type ?? '') === 'videos')>Video</option><option value="courses" @selected(($type ?? '') === 'courses')>Kelas</option></select><button class="btn-primary">Cari</button></form>@endif
+@if(!isset($type) || in_array($type, ['all','articles']))<div class="mt-10 grid gap-5 md:grid-cols-3">@forelse($posts as $post)@include('public.partials.card', ['post'=>$post])@empty<p class="col-span-3 rounded-xl bg-slate-50 p-8 text-slate-500">Belum ada artikel yang sesuai.</p>@endforelse</div><div class="mt-6">{{ $posts->links() }}</div>@endif
+@if(isset($videos) && $videos->isNotEmpty())<h2 class="mt-10 text-2xl font-bold">Video</h2><div class="mt-4 grid gap-4 md:grid-cols-3">@foreach($videos as $video)<a wire:navigate href="{{ route('video.show', $video) }}" class="card hover:border-indigo-500">{{ $video->title }}</a>@endforeach</div>@endif
+@if(isset($courses) && $courses->isNotEmpty())<h2 class="mt-10 text-2xl font-bold">Kelas</h2><div class="mt-4 grid gap-4 md:grid-cols-3">@foreach($courses as $course)<a wire:navigate href="{{ route('course.show', $course) }}" class="card hover:border-indigo-500">{{ $course->title }}</a>@endforeach</div>@endif
+@endsection

@@ -1,0 +1,5 @@
+@extends('admin.layout')
+@section('title', 'Halaman')
+@section('content')
+<div class="flex justify-between gap-3"><h1 class="text-3xl font-bold">Halaman statis</h1><a wire:navigate href="{{ route('admin.pages.create') }}" class="btn-primary">+ Halaman</a></div><div class="card mt-6">@forelse($pages as $page)<div class="flex justify-between gap-3 border-b border-slate-100 py-4"><div><p class="font-semibold">{{ $page->title }}</p><p class="text-xs text-slate-500">/{{ $page->slug }} · {{ $page->is_published ? 'Terbit' : 'Draft' }}</p></div><div class="flex gap-3"><a wire:navigate href="{{ route('admin.pages.edit', $page) }}" class="text-indigo-700">Edit</a><form action="{{ route('admin.pages.destroy', $page) }}" method="post" data-confirm="Hapus halaman ini?">@csrf @method('DELETE')<button class="text-red-700">Hapus</button></form></div></div>@empty<p class="text-slate-500">Belum ada halaman.</p>@endforelse</div><div class="mt-5">{{ $pages->links() }}</div>
+@endsection

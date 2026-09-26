@@ -1,0 +1,5 @@
+@extends('admin.layout')
+@section('title', 'Revisi Artikel')
+@section('content')
+<a wire:navigate href="{{ route('admin.posts.edit', $post) }}" class="text-sm text-indigo-700">← Kembali</a><h1 class="my-6 text-3xl font-bold">Revisi: {{ $post->title }}</h1><div class="card">@foreach($revisions as $revision)<div class="flex items-center justify-between border-b border-slate-100 py-4"><div><p class="font-semibold">Versi {{ $revision->version }}</p><p class="text-sm text-slate-500">{{ $revision->summary }} · {{ $revision->created_at }}</p></div><form action="{{ route('admin.posts.revisions.restore', [$post, $revision->version]) }}" method="post" data-confirm="Pulihkan revisi ini sebagai versi baru?">@csrf<button class="btn-secondary">Pulihkan</button></form></div>@endforeach</div><div class="mt-5">{{ $revisions->links() }}</div>
+@endsection

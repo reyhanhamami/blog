@@ -1,0 +1,2 @@
+{!! '<'.'?xml version="1.0" encoding="UTF-8"?'.'>' !!}
+<rss version="2.0"><channel><title>Besofton Insights</title><link>{{ route('home') }}</link><description>Artikel dan tutorial teknologi Besofton</description><language>id</language>@foreach($posts as $post)<item><title>{{ $post->title }}</title><link>{{ route('post.show', $post->slug) }}</link><guid>{{ route('post.show', $post->slug) }}</guid><pubDate>{{ $post->published_at->toRssString() }}</pubDate><description>{{ $post->excerpt }}</description></item>@endforeach</channel></rss>

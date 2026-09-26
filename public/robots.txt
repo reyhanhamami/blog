@@ -1,2 +1,4 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /cari
+Sitemap: https://blog.besofton.id/sitemap.xml

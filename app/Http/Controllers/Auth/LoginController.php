@@ -13,34 +13,30 @@ class LoginController extends Controller
 {
     public function create(): View
     {
-        return view('pages.auth.signin', ['title' => 'Sign In']);
+        return view('admin.login');
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            throw ValidationException::withMessages([
-                'email' => __('These credentials do not match our records.'),
-            ]);
+        $request->validate(['email' => ['required', 'email'], 'password' => ['required']]);
+        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            throw ValidationException::withMessages(['email' => 'Email atau password tidak sesuai.']);
+        }
+        $request->session()->regenerate();
+        if (! $request->user()->canAccessCms()) {
+            Auth::logout();
+            throw ValidationException::withMessages(['email' => 'Akun ini tidak memiliki akses CMS.']);
         }
 
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('admin.login');
     }
 }

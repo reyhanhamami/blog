@@ -1,0 +1,6 @@
+@extends('public.layout')
+@section('seo_title', 'Daftar | Besofton Insights')
+@section('robots', 'noindex,nofollow')
+@section('content')
+<div class="mx-auto max-w-md"><h1 class="text-3xl font-bold">Buat akun pembaca</h1><form action="{{ route('reader.register') }}" method="post" class="card mt-6 space-y-4">@csrf<div><label class="form-label">Nama</label><input class="form-input" name="name" value="{{ old('name') }}" required>@error('name')<p class="error">{{ $message }}</p>@enderror</div><div><label class="form-label">Email</label><input class="form-input" type="email" name="email" value="{{ old('email') }}" required>@error('email')<p class="error">{{ $message }}</p>@enderror</div><div><label class="form-label">Password</label><input class="form-input" type="password" name="password" required>@error('password')<p class="error">{{ $message }}</p>@enderror</div><div><label class="form-label">Ulangi password</label><input class="form-input" type="password" name="password_confirmation" required></div><button class="btn-primary w-full">Daftar</button></form><a wire:navigate href="{{ route('login') }}" class="mt-5 inline-block text-sm text-indigo-700">Sudah punya akun? Masuk</a></div>
+@endsection

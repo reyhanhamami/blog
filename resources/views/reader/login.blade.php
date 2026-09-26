@@ -1,0 +1,6 @@
+@extends('public.layout')
+@section('seo_title', 'Masuk | Besofton Insights')
+@section('robots', 'noindex,nofollow')
+@section('content')
+<div class="mx-auto max-w-md"><h1 class="text-3xl font-bold">Masuk sebagai pembaca</h1><p class="mt-2 text-slate-600">Simpan artikel dan pantau pembelajaran.</p><form action="{{ route('reader.login') }}" method="post" class="card mt-6 space-y-4">@csrf<div><label class="form-label">Email</label><input class="form-input" name="email" type="email" value="{{ old('email') }}" required>@error('email')<p class="error">{{ $message }}</p>@enderror</div><div><label class="form-label">Password</label><input class="form-input" name="password" type="password" required></div><label class="flex gap-2 text-sm"><input type="checkbox" name="remember" value="1"> Ingat saya</label><button class="btn-primary w-full">Masuk</button></form><div class="mt-5 flex justify-between text-sm text-indigo-700"><a wire:navigate href="{{ route('register') }}">Buat akun</a><a wire:navigate href="{{ route('password.request') }}">Lupa password?</a></div></div>
+@endsection

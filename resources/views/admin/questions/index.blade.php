@@ -1,0 +1,5 @@
+@extends('admin.layout')
+@section('title', 'Tanya Jawab')
+@section('content')
+<h1 class="text-3xl font-bold">Tanya jawab</h1><form action="{{ route('admin.questions.index') }}" class="my-6 flex gap-3"><select name="status" class="form-input max-w-xs"><option value="">Semua status</option>@foreach(['pending','approved','rejected','spam'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select><button class="btn-secondary">Filter</button></form><div class="card">@forelse($questions as $question)<a wire:navigate href="{{ route('admin.questions.show', $question) }}" class="block border-b border-slate-100 py-4 hover:text-indigo-700"><p class="font-semibold">{{ $question->post?->title }} · {{ $question->name }}</p><p class="line-clamp-2 text-sm text-slate-600">{{ $question->body }}</p><p class="mt-1 text-xs text-slate-400">{{ $question->status }} · {{ $question->created_at->format('d M Y') }}</p></a>@empty<p class="text-slate-500">Belum ada pertanyaan.</p>@endforelse</div><div class="mt-5">{{ $questions->links() }}</div>
+@endsection
