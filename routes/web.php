@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PostSourceController;
 use App\Http\Controllers\Admin\QuestionModerationController;
 use App\Http\Controllers\Admin\QuizQuestionController;
 use App\Http\Controllers\Admin\RedirectController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ReaderController;
+use App\Http\Middleware\EnsureAdminPermission;
 use App\Http\Middleware\EnsureCmsAccess;
 use App\Models\Course;
 use App\Models\Post;
@@ -51,17 +53,25 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/admin/logout', [LoginController::class, 'destroy'])->middleware(['auth', EnsureCmsAccess::class])->name('admin.logout');
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::class])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::class, EnsureAdminPermission::class])->group(function () {
     Route::get('/', function () {
-        $metrics = [
-            'Artikel' => Post::count(), 'Terbit' => Post::published()->count(),
-            'Draft' => Post::where('status', 'draft')->count(), 'Terjadwal' => Post::where('status', 'scheduled')->count(),
-            'Penulis' => User::whereIn('role', ['author', 'editor'])->count(), 'Video' => Video::count(),
-            'Kuis' => Quiz::count(), 'Kelas' => Course::count(), 'Tayangan' => Post::sum('views'),
-            'Percobaan kuis' => DB::table('quiz_attempts')->count(), 'Masukan pembaca' => DB::table('article_feedback')->count(),
-        ];
+        $user = auth()->user();
+        $canViewArticles = $user->can('articles.view');
+        $ownOnly = $user->can('articles.update-own') && ! $user->can('articles.update');
+        $posts = fn () => Post::query()->when($ownOnly, fn ($query) => $query->where('created_by', $user->id));
+        $metrics = ! $canViewArticles ? [] : ($ownOnly ? [
+            'Artikel Saya' => $posts()->count(), 'Draft Saya' => $posts()->where('status', 'draft')->count(),
+            'Menunggu Review' => $posts()->where('status', 'pending_review')->count(), 'Terbit Saya' => $posts()->published()->count(),
+        ] : [
+            'Artikel' => $posts()->count(), 'Terbit' => $posts()->published()->count(),
+            'Draft' => $posts()->where('status', 'draft')->count(), 'Menunggu Review' => $posts()->where('status', 'pending_review')->count(),
+            'Terjadwal' => $posts()->where('status', 'scheduled')->count(),
+        ]);
+        if ($user->can('analytics.view')) {
+            $metrics += ['Penulis' => User::whereIn('role', ['author', 'editor'])->count(), 'Video' => Video::count(), 'Kuis' => Quiz::count(), 'Kelas' => Course::count(), 'Tayangan' => Post::sum('views'), 'Percobaan kuis' => DB::table('quiz_attempts')->count(), 'Masukan pembaca' => DB::table('article_feedback')->count()];
+        }
 
-        return view('admin.dashboard', ['metrics' => $metrics, 'latest' => Post::latest()->take(8)->get(), 'scheduled' => Post::where('status', 'scheduled')->orderBy('scheduled_at')->take(8)->get(), 'activity' => DB::table('activities')->latest('created_at')->take(8)->get()]);
+        return view('admin.dashboard', ['metrics' => $metrics, 'latest' => $canViewArticles ? $posts()->latest()->take(8)->get() : collect(), 'scheduled' => $canViewArticles ? $posts()->where('status', 'scheduled')->orderBy('scheduled_at')->take(8)->get() : collect(), 'activity' => $user->can('analytics.view') ? DB::table('activities')->latest('created_at')->take(8)->get() : collect()]);
     })->name('dashboard');
 
     Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
@@ -93,6 +103,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
+    Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+    Route::patch('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
     Route::get('/redirects', [RedirectController::class, 'index'])->name('redirects.index');
     Route::post('/redirects', [RedirectController::class, 'store'])->name('redirects.store');
     Route::delete('/redirects/{redirect}', [RedirectController::class, 'destroy'])->name('redirects.destroy');
@@ -103,7 +119,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
     })->name('analytics');
     Route::get('/editorial-calendar', function () {
         Gate::authorize('manage-content');
-        $events = Post::whereIn('status', ['scheduled', 'published'])->get()->map(fn ($post) => ['title' => $post->title, 'start' => ($post->scheduled_at ?: $post->published_at)?->toDateString(), 'url' => route('admin.posts.edit', $post), 'color' => $post->status === 'scheduled' ? '#d97706' : '#4338ca'])->filter(fn ($event) => $event['start'])->values();
+        $events = Post::whereIn('status', ['scheduled', 'published'])->get()->map(fn ($post) => ['title' => $post->title, 'start' => ($post->scheduled_at ?: $post->published_at)?->toDateString(), 'url' => Gate::allows('update', $post) ? route('admin.posts.edit', $post) : (Gate::allows('view', $post) ? route('admin.posts.preview', $post) : null), 'color' => $post->status === 'scheduled' ? '#d97706' : '#4338ca'])->filter(fn ($event) => $event['start'])->values();
 
         return view('admin.calendar', compact('events'));
     })->name('editorial-calendar');

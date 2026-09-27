@@ -41,7 +41,7 @@ class ReaderAuthController extends Controller
         }
         $request->session()->regenerate();
 
-        return redirect()->intended($request->user()->canAccessCms() ? route('admin.dashboard') : route('reader.account'));
+        return redirect()->intended(route('reader.account'));
     }
 
     public function register(Request $request)

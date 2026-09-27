@@ -17,6 +17,45 @@ let TomSelect;
 let Calendar;
 let dayGridPlugin;
 let initGeneration = 0;
+window.permissionMatrix = (initial, all) => ({
+    selected: [...new Set(initial)],
+    original: [...new Set(initial)].sort().join('|'),
+    all,
+    get dirty() { return [...this.selected].sort().join('|') !== this.original; },
+    mark() { this.$root.dataset.dirty = this.dirty ? '1' : '0'; },
+    toggle(name, checked) {
+        if (checked) {
+            if (!this.selected.includes(name)) this.selected.push(name);
+        } else {
+            this.selected = this.selected.filter(item => item !== name);
+            if (name === 'cms.access') this.selected = [];
+            else if (name.endsWith('.view')) {
+                const module = name.split('.')[0];
+                this.selected = this.selected.filter(item => !item.startsWith(`${module}.`));
+            }
+        }
+        if (this.selected.length && !this.selected.includes('cms.access')) this.selected.push('cms.access');
+        if (this.selected.length && !this.selected.includes('dashboard.view')) this.selected.push('dashboard.view');
+        for (const item of [...this.selected]) {
+            const view = `${item.split('.')[0]}.view`;
+            if (this.all.includes(view) && !this.selected.includes(view)) this.selected.push(view);
+        }
+        this.mark();
+    },
+    toggleMany(names) {
+        const enable = !names.every(name => this.selected.includes(name));
+        for (const name of names) this.toggle(name, enable);
+        this.mark();
+    },
+});
+document.addEventListener('livewire:navigate', async event => {
+    const form = document.querySelector('[data-permission-form][data-dirty="1"]');
+    if (!form || form.dataset.saving) return;
+    event.preventDefault();
+    Swal ||= (await import('sweetalert2')).default;
+    const result = await Swal.fire({ title: 'Perubahan belum disimpan', text: 'Keluar tanpa menyimpan permissions?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Keluar', cancelButtonText: 'Tetap di sini' });
+    if (result.isConfirmed) { form.dataset.dirty = '0'; window.Livewire?.navigate(event.detail.url); }
+});
 document.addEventListener('submit', async event => {
     const form = event.target.closest('form[data-confirm]');
     if (!form || form.dataset.confirmed) return;

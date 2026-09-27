@@ -170,7 +170,7 @@ test('continue learning picks first incomplete lesson in latest active unfinishe
     $this->actingAs($readerA)->get(route('reader.account'))->assertSee('Lanjutkan Belajar')->assertSee('Kedua');
     DB::table('course_progress')->insert(['user_id' => $readerA->id, 'course_lesson_id' => $second->id, 'completed_at' => now()]);
     expect(app(ContinueLearning::class)->forUser($readerA->id))->toBeNull();
-    $this->actingAs($readerA)->get(route('reader.account'))->assertDontSee('Lanjutkan Belajar');
+    $this->actingAs($readerA)->get(route('reader.account'))->assertSee('Course selesai')->assertDontSee('<h3 class="font-semibold">Lanjutkan Belajar</h3>', false);
 });
 
 test('learning path supports a quiz item without exposing draft quiz', function () {

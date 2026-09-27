@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -78,7 +79,17 @@ class User extends Authenticatable
 
     public function canAccessCms(): bool
     {
-        return in_array($this->role, ['superadmin', 'admin', 'editor', 'author'], true);
+        return $this->can('cms.access');
+    }
+
+    public function roleRecord(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role', 'name');
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return $this->roleRecord?->permissions->contains('name', $permission) ?? false;
     }
 
     public function getProfilePhotoUrlAttribute(): string

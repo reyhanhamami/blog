@@ -58,7 +58,7 @@ test('multiple featured articles are server rendered with usable slider controls
         ->assertSee('Artikel unggulan-dua')->getContent();
 
     expect(substr_count($html, 'class="swiper-slide"'))->toBe(2);
-    expect($html)->toContain('public-home-');
+    expect($html)->toMatch('/(?:public-home-|resources\/js\/public-home\.js)/');
 });
 
 test('newsletter validates email, stores one subscriber, and permits unsubscribe', function () {

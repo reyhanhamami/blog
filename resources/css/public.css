@@ -33,6 +33,12 @@
 .public-contact-button { display: inline-flex; align-items: center; gap: 10px; padding: 8px 9px 8px 17px; background: #080808; color: #fff !important; border-radius: 28px; font-size: 11px; }
 .public-contact-button span { display: grid; place-items: center; width: 22px; height: 22px; background: #fff; color: #080808; border-radius: 50%; font-size: 16px; }
 .public-account-link { font-size: 11px; }
+.public-user-menu { position: relative; }
+.public-user-menu button.public-account-link { border: 0; background: transparent; cursor: pointer; }
+.public-account-dropdown { position: absolute; top: calc(100% + 14px); right: 0; z-index: 40; width: 190px; padding: 7px; border: 1px solid #e8e2d8; border-radius: 10px; background: #fffdf9; box-shadow: 0 12px 30px #0002; }
+.public-account-dropdown a, .public-account-dropdown button { display: block; width: 100%; padding: 9px 10px; border: 0; border-radius: 6px; background: transparent; text-align: left; font-size: 12px; cursor: pointer; }
+.public-account-dropdown a:hover, .public-account-dropdown button:hover { background: #f3ece1; }
+.public-mobile-menu form button { width: 100%; padding: 12px; border: 0; border-bottom: 1px solid #eee8df; background: transparent; text-align: left; font-size: 15px; }
 .public-menu-toggle, .public-mobile-menu { display: none; }
 .insights-home { overflow: clip; }
 .home-hero { background: radial-gradient(circle at 19% 65%, #fcfaf7 0, #f4efe7 48%, #faf8f3 100%); }

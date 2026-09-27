@@ -881,6 +881,7 @@ pre[class*='language-'] {
   }
 }
 .cms-nav { display:block; border-radius:.6rem; padding:.65rem .85rem; color:#cbd5e1; }
+.cms-nav.flex { display:flex; }
 .cms-nav:hover,.cms-active { background:#312e81; color:white; }
 .card { border:1px solid #e2e8f0; border-radius:1rem; background:white; padding:1.5rem; }
 .form-label { display:block; margin-bottom:.4rem; font-size:.875rem; font-weight:600; color:#334155; }

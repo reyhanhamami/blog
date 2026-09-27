@@ -36,7 +36,7 @@ class PostController extends Controller
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
-        if ($request->user()->role === 'author') {
+        if ($request->user()->can('articles.update-own') && ! $request->user()->can('articles.update')) {
             $query->where('created_by', $request->user()->id);
         }
         $sort = in_array($request->get('sort'), ['title', 'created_at', 'published_at'], true) ? $request->sort : 'created_at';
@@ -59,7 +59,7 @@ class PostController extends Controller
         abort_unless($posts->count() === count($data['ids']), 422);
         foreach ($posts as $post) {
             Gate::authorize($data['action'] === 'trash' ? 'delete' : ($data['action'] === 'publish' ? 'publish' : 'update'), $post);
-            if ($request->user()->role === 'author' && in_array($data['action'], ['archive', 'category', 'author'], true)) {
+            if (! $request->user()->can('articles.update') && in_array($data['action'], ['archive', 'category', 'author'], true)) {
                 abort(403);
             }
         }
@@ -112,6 +112,9 @@ class PostController extends Controller
     public function update(Request $request, Post $post, PostWriter $writer)
     {
         Gate::authorize('update', $post);
+        if ($post->status === 'pending_review' && $request->input('status') === 'published' && $post->created_by !== $request->user()->id) {
+            Gate::authorize('articles.review');
+        }
         $writer->save($post, $this->validated($request, $post), $request->user());
 
         return redirect()->route('admin.posts.edit', $post)->with('success', 'Artikel berhasil diperbarui.');
@@ -203,7 +206,7 @@ class PostController extends Controller
 
     private function validated(Request $request, ?Post $post = null): array
     {
-        $statuses = in_array($request->user()->role, ['author'], true) ? ['draft', 'pending_review'] : ['draft', 'pending_review', 'scheduled', 'published', 'archived'];
+        $statuses = $request->user()->can('articles.publish') ? ['draft', 'pending_review', 'scheduled', 'published', 'archived'] : ['draft', 'pending_review'];
         $data = $request->validate([
             'title' => ['required', 'string', 'max:191'],
             'slug' => ['nullable', 'string', 'max:191', Rule::unique('posts', 'slug')->ignore($post?->id)],

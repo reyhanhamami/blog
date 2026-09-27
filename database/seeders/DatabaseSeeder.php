@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Menu;
 use App\Models\Page;
 use App\Models\User;
+use App\Support\PermissionCatalog;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -12,6 +13,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        PermissionCatalog::seedDefaults();
         User::firstOrCreate(['email' => env('SEED_ADMIN_EMAIL', 'admin@gmail.com')], [
             'name' => 'Besofton Admin',
             'role' => 'superadmin',

@@ -10,7 +10,7 @@ class EnsureCmsAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->canAccessCms(), 403);
+        abort_unless($request->user()?->can('cms.access'), 403);
 
         return $next($request);
     }

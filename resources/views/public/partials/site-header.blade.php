@@ -16,7 +16,16 @@
             @if($contactUrl)
                 <a href="{{ $contactUrl }}" @if(! $contactIsExternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif class="public-contact-button">Hubungi Kami <span aria-hidden="true">↗</span></a>
             @endif
-            @auth<a wire:navigate href="{{ route('reader.account') }}" class="public-account-link">Akun</a>
+            @auth
+                <div class="public-user-menu" x-data="{ expanded: false }" @click.outside="expanded = false" @keydown.escape.window="expanded = false">
+                    <button type="button" class="public-account-link" @click="expanded = ! expanded" :aria-expanded="expanded.toString()" aria-controls="public-account-menu">{{ auth()->user()->display_name }} <span aria-hidden="true">⌄</span></button>
+                    <div id="public-account-menu" class="public-account-dropdown" x-show="expanded" x-cloak>
+                        <a wire:navigate href="{{ route('reader.account') }}">Profil & Bookmark</a>
+                        <a wire:navigate href="{{ route('reader.account') }}#learning">Lanjutkan Belajar</a>
+                        @can('cms.access')<a wire:navigate href="{{ route('admin.dashboard') }}">Masuk ke CMS</a>@endcan
+                        <form method="post" action="{{ route('reader.logout') }}">@csrf<button type="submit">Keluar</button></form>
+                    </div>
+                </div>
             @else<a wire:navigate href="{{ route('login') }}" class="public-account-link">Masuk</a>@endauth
         </div>
         <button type="button" class="public-menu-toggle" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="public-mobile-menu" aria-label="Buka navigasi">
@@ -30,7 +39,10 @@
         @endforeach
         @unless($headerLinks->contains('url', '/'))<a wire:navigate href="{{ route('home') }}" @click="open = false">Insights</a>@endunless
         @if($contactUrl)<a href="{{ $contactUrl }}" @if(! $contactIsExternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif @click="open = false">Hubungi Kami ↗</a>@endif
-        @auth<a wire:navigate href="{{ route('reader.account') }}" @click="open = false">Akun</a>
+        @auth<a wire:navigate href="{{ route('reader.account') }}" @click="open = false">Profil & Bookmark</a>
+        <a wire:navigate href="{{ route('reader.account') }}#learning" @click="open = false">Lanjutkan Belajar</a>
+        @can('cms.access')<a wire:navigate href="{{ route('admin.dashboard') }}" @click="open = false">Masuk ke CMS</a>@endcan
+        <form method="post" action="{{ route('reader.logout') }}">@csrf<button type="submit">Keluar</button></form>
         @else<a wire:navigate href="{{ route('login') }}" @click="open = false">Masuk</a>@endauth
     </nav>
 </header>
