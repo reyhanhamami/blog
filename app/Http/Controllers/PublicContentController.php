@@ -12,6 +12,8 @@ use App\Models\Quiz;
 use App\Models\Tag;
 use App\Models\Topic;
 use App\Models\Video;
+use App\Services\ArticleNavigation;
+use App\Services\QuizGrader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -75,13 +77,13 @@ class PublicContentController extends Controller
         return view('public.archive', ['title' => $prefix.': '.$entity->name, 'description' => $entity->description ?? $entity->short_bio ?? '', 'posts' => $entity->posts()->published()->with(['category', 'author'])->latest('published_at')->paginate(12), 'search' => null, 'noindex' => false, 'entity' => $entity]);
     }
 
-    public function post(string $slug)
+    public function post(string $slug, ArticleNavigation $navigation)
     {
         $page = Page::where('slug', $slug)->where('is_published', true)->first();
         if ($page) {
             return view('public.page', compact('page'));
         }
-        $post = Post::published()->with(['category', 'author', 'tags', 'topics', 'sources'])->where('slug', $slug)->first();
+        $post = Post::published()->with(['category', 'author', 'tags', 'topics', 'sources', 'quiz'])->where('slug', $slug)->first();
         if (! $post) {
             $redirect = DB::table('redirects')->where('from_path', '/'.$slug)->first();
             if ($redirect) {
@@ -102,7 +104,9 @@ class PublicContentController extends Controller
         }
         $questions = $post->questions()->where('status', 'approved')->with('answers.user')->latest()->take(30)->get();
 
-        return view('public.post', compact('post', 'related', 'questions') + ['preview' => false]);
+        $navigationLinks = $navigation->for($post);
+
+        return view('public.post', compact('post', 'related', 'questions') + $navigationLinks + ['preview' => false]);
     }
 
     public function video(Video $video)
@@ -115,35 +119,23 @@ class PublicContentController extends Controller
     public function quiz(Quiz $quiz)
     {
         abort_unless($quiz->status === 'published', 404);
-        $quiz->load('questions.options');
 
         return view('public.quiz', compact('quiz'));
     }
 
-    public function submitQuiz(Request $request, Quiz $quiz)
+    public function submitQuiz(Request $request, Quiz $quiz, QuizGrader $grader)
     {
         abort_unless($quiz->status === 'published', 404);
-        $quiz->load('questions.options');
-        $answers = $request->validate(['answers' => ['required', 'array'], 'answers.*' => ['integer']])['answers'];
-        $total = $quiz->questions->count();
-        abort_if($total === 0, 422);
-        $correct = 0;
-        foreach ($quiz->questions as $question) {
-            $selected = $question->options->firstWhere('id', (int) ($answers[$question->id] ?? 0));
-            if ($selected?->is_correct) {
-                $correct++;
-            }
-        }
-        $score = (int) round($correct / $total * 100);
-        DB::table('quiz_attempts')->insert(['quiz_id' => $quiz->id, 'user_id' => $request->user()?->id, 'correct_count' => $correct, 'total_count' => $total, 'score' => $score, 'created_at' => now()]);
+        $answers = $request->validate(['answers' => ['required', 'array']])['answers'];
+        $result = $grader->grade($quiz, $answers, $request->user()?->id);
 
-        return back()->with('quiz_result', ['correct' => $correct, 'total' => $total, 'score' => $score, 'passed' => $score >= $quiz->passing_score]);
+        return back()->with('quiz_result', $result);
     }
 
     public function path(LearningPath $path)
     {
         abort_unless($path->status === 'published', 404);
-        $path->load('items.post');
+        $path->load(['items.post', 'items.quiz', 'items.video']);
 
         return view('public.path', compact('path'));
     }

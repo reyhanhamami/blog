@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Quiz;
 use App\Models\Tag;
 use App\Models\Topic;
 use App\Services\Content\PostWriter;
@@ -146,7 +147,7 @@ class PostController extends Controller
     {
         Gate::authorize('view', $post);
 
-        return view('public.post', ['post' => $post->load(['author', 'category', 'tags', 'topics', 'sources']), 'preview' => true, 'related' => collect(), 'questions' => collect()]);
+        return view('public.post', ['post' => $post->load(['author', 'category', 'tags', 'topics', 'sources']), 'preview' => true, 'related' => collect(), 'questions' => collect(), 'previous' => null, 'next' => null]);
     }
 
     public function duplicate(Post $post)
@@ -197,7 +198,7 @@ class PostController extends Controller
     {
         $post->loadMissing(['tags', 'topics', 'relatedPosts']);
 
-        return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title'])];
+        return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title']), 'quizOptions' => Quiz::where('status', 'published')->when($post->quiz_id, fn ($q) => $q->orWhere('id', $post->quiz_id))->orderBy('title')->get(['id', 'title'])];
     }
 
     private function validated(Request $request, ?Post $post = null): array
@@ -210,6 +211,7 @@ class PostController extends Controller
             'content' => ['nullable', 'string'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'author_id' => ['nullable', 'exists:authors,id'],
+            'quiz_id' => ['nullable', 'exists:quizzes,id'],
             'content_type' => ['required', Rule::in(['article', 'tutorial', 'guide', 'news', 'opinion', 'case_study', 'video_article'])],
             'difficulty' => ['nullable', Rule::in(['beginner', 'intermediate', 'advanced'])],
             'status' => ['required', Rule::in($statuses)],

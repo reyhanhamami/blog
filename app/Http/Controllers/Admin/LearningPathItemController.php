@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LearningPathItemType;
 use App\Http\Controllers\Controller;
 use App\Models\LearningPath;
 use App\Models\LearningPathItem;
 use App\Models\Post;
+use App\Models\Quiz;
+use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LearningPathItemController extends Controller
 {
@@ -15,14 +20,40 @@ class LearningPathItemController extends Controller
     {
         Gate::authorize('manage-content');
 
-        return view('admin.learning-items.index', ['path' => $path->load('items.post'), 'posts' => Post::published()->orderBy('title')->get(['id', 'title'])]);
+        return view('admin.learning-items.index', [
+            'path' => $path->load(['items.post', 'items.quiz', 'items.video']),
+            'posts' => Post::published()->orderBy('title')->get(['id', 'title']),
+            'quizzes' => Quiz::where('status', 'published')->orderBy('title')->get(['id', 'title']),
+            'videos' => Video::published()->orderBy('title')->get(['id', 'title']),
+        ]);
     }
 
     public function store(Request $request, LearningPath $path)
     {
         Gate::authorize('manage-content');
-        $data = $request->validate(['post_id' => ['required', 'exists:posts,id'], 'sort_order' => ['required', 'integer', 'min:0']]);
-        $path->items()->updateOrCreate(['post_id' => $data['post_id']], ['sort_order' => $data['sort_order']]);
+        $data = $request->validate([
+            'type' => ['nullable', Rule::enum(LearningPathItemType::class)],
+            'post_id' => ['nullable', 'exists:posts,id'],
+            'quiz_id' => ['nullable', 'exists:quizzes,id'],
+            'video_id' => ['nullable', 'exists:videos,id'],
+            'sort_order' => ['required', 'integer', 'min:0'],
+        ]);
+        $type = LearningPathItemType::from($data['type'] ?? LearningPathItemType::Article->value);
+        $key = match ($type) {
+            LearningPathItemType::Article => 'post_id',
+            LearningPathItemType::Video => 'video_id',
+            LearningPathItemType::Quiz => 'quiz_id',
+        };
+        if (empty($data[$key])) {
+            throw ValidationException::withMessages([$key => 'Pilih materi yang sesuai.']);
+        }
+        $path->items()->updateOrCreate([$key => $data[$key]], [
+            'type' => $type,
+            'post_id' => $key === 'post_id' ? $data[$key] : null,
+            'video_id' => $key === 'video_id' ? $data[$key] : null,
+            'quiz_id' => $key === 'quiz_id' ? $data[$key] : null,
+            'sort_order' => $data['sort_order'],
+        ]);
 
         return back()->with('success', 'Materi ditambahkan.');
     }

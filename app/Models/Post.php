@@ -29,6 +29,11 @@ class Post extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function quiz(): BelongsTo
+    {
+        return $this->belongsTo(Quiz::class);
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(Author::class);

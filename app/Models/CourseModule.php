@@ -8,6 +8,11 @@ class CourseModule extends Model
 {
     protected $guarded = ['id'];
 
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
     public function lessons()
     {
         return $this->hasMany(CourseLesson::class)->orderBy('sort_order');
