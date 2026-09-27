@@ -4,21 +4,36 @@ namespace Database\Seeders;
 
 use App\Models\Menu;
 use App\Models\Page;
+use App\Models\Setting;
 use App\Models\User;
 use App\Support\PermissionCatalog;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         PermissionCatalog::seedDefaults();
-        User::firstOrCreate(['email' => env('SEED_ADMIN_EMAIL', 'admin@gmail.com')], [
-            'name' => 'Besofton Admin',
-            'role' => 'superadmin',
-            'password' => Hash::make(env('SEED_DEFAULT_PASSWORD', 'asddsa123')),
-        ]);
+        $admin = User::firstOrNew(['email' => env('SEED_ADMIN_EMAIL', 'admin@gmail.com')]);
+        if (! $admin->exists) {
+            $values = [
+                'name' => 'Besofton Admin', 'role' => 'superadmin',
+                'password' => Hash::make(env('SEED_DEFAULT_PASSWORD', 'asddsa123')),
+            ];
+            if (Schema::hasColumn('users', 'mobile_phone')) {
+                $values['mobile_phone'] = '';
+            }
+            $admin->forceFill($values)->save();
+        }
+        foreach ([
+            'site_name' => 'Besofton Insights',
+            'tagline' => 'Ide, Panduan, Insights.',
+            'default_description' => 'Artikel, tutorial, dan strategi digital dari Besofton.',
+        ] as $key => $value) {
+            Setting::firstOrCreate(['key' => $key], ['value' => $value]);
+        }
         foreach ([
             'about' => ['Tentang Besofton Insights', '<p>Besofton Insights adalah ruang berbagi pengetahuan teknologi, tutorial, dan pengalaman praktis dari tim Besofton.</p>'],
             'privacy-policy' => ['Kebijakan Privasi', '<p>Kami menggunakan data akun untuk menyediakan bookmark, riwayat baca, dan progres belajar. Data tidak dijual kepada pihak lain. Hubungi tim Besofton untuk permintaan terkait data pribadi Anda.</p>'],

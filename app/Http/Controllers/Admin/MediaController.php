@@ -58,7 +58,10 @@ class MediaController extends Controller
         if (Post::withTrashed()->whereIn('featured_image', [$media->url, '/'.$media->path, $media->path])->orWhere('content', 'like', '%'.$media->path.'%')->exists()) {
             return back()->with('error', 'Gambar masih digunakan artikel.');
         }
-        File::delete(public_path($media->path));
+        // Library entries may point at shared site assets; only uploaded files belong to this controller.
+        if (Str::startsWith($media->path, 'uploads/')) {
+            File::delete(public_path($media->path));
+        }
         $media->delete();
 
         return back()->with('success', 'Gambar dihapus.');

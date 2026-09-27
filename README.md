@@ -28,6 +28,20 @@ php artisan serve
 
 CMS: `/admin/login`. Akun seed awal: **admin@gmail.com / asddsa123**, role `superadmin`. Ganti password sebelum produksi. Seeder hanya membuat akun jika belum ada, sehingga menjalankannya lagi tidak mengembalikan password yang sudah diganti.
 
+### Data contoh development
+
+`php artisan db:seed` hanya menjalankan data inti: role, permission, akun admin, pengaturan dasar, halaman informasi, dan menu yang sudah diperlukan situs. Artikel dan akun contoh **tidak** ditambahkan otomatis, termasuk di production.
+
+Untuk mengisi dataset kecil yang saling terhubung secara eksplisit:
+
+```bash
+php artisan db:seed --class=DemoSeeder
+```
+
+Seeder demo aman dijalankan ulang. Record yang cocok dengan email atau slug contoh tidak ditimpa, sehingga perubahan manual tetap tersimpan. Dataset mencakup dua artikel, satu video edukasi [OpenAI dan DeepLearning.AI](https://www.youtube.com/watch?v=H4YK_7MAckk), satu kuis dengan tiga tipe pertanyaan, satu learning path, satu course dengan progres reader yang belum selesai, Q&A, feedback, bookmark, subscriber, dan redirect. Media logo hanya diregistrasi bila file `storage/app/public/logo.png` dan URL publiknya benar-benar ada; seeder tidak membuat gambar palsu. Analitik contoh hanya berisi 3 dan 1 tayangan pada dua artikel, karena aplikasi menyimpan penghitung tayangan pada artikel dan belum memiliki tabel search log.
+
+Akun demo (password awal masing-masing `asddsa123`): `editor@besofton.id` (`editor`), `author@besofton.id` (`author`), dan `reader@besofton.id` (`reader`). Password yang sudah diganti tidak direset oleh seeder. Semua akun ini hanya untuk development; ganti password atau hapus akun demo sebelum menggunakan database sebagai data production.
+
 ## Pengembangan dan test
 
 ```bash
