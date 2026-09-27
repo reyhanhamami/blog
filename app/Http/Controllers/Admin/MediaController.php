@@ -29,6 +29,10 @@ class MediaController extends Controller
         if (preg_match('/(?:^|\.)(?:php|phtml|phar)(?:\.|$)/i', $file->getClientOriginalName())) {
             throw ValidationException::withMessages(['file' => 'Nama file tidak diizinkan.']);
         }
+        $dimensions = @getimagesize($file->getRealPath());
+        if (! $dimensions || ! in_array($dimensions['mime'] ?? '', ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
+            throw ValidationException::withMessages(['file' => 'File harus berupa gambar raster yang valid.']);
+        }
         $folder = 'uploads/'.now()->format('Y/m');
         File::ensureDirectoryExists(public_path($folder));
         $filename = Str::random(40).'.'.$file->guessExtension();
@@ -51,7 +55,9 @@ class MediaController extends Controller
     public function destroy(Media $media)
     {
         Gate::authorize('manage-content');
-        abort_if(Post::where('featured_image', $media->url)->orWhere('content', 'like', '%'.$media->path.'%')->exists(), 422, 'Gambar masih digunakan artikel.');
+        if (Post::withTrashed()->whereIn('featured_image', [$media->url, '/'.$media->path, $media->path])->orWhere('content', 'like', '%'.$media->path.'%')->exists()) {
+            return back()->with('error', 'Gambar masih digunakan artikel.');
+        }
         File::delete(public_path($media->path));
         $media->delete();
 

@@ -48,7 +48,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [LoginController::class, 'create'])->name('admin.login');
     Route::post('/admin/login', [LoginController::class, 'store'])->middleware('throttle:5,1')->name('admin.login.store');
 });
-Route::post('/admin/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('admin.logout');
+Route::post('/admin/logout', [LoginController::class, 'destroy'])->middleware(['auth', EnsureCmsAccess::class])->name('admin.logout');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::class])->group(function () {
     Route::get('/', function () {

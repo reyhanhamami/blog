@@ -16,7 +16,7 @@ class HtmlSanitizer
             return '';
         }
         if (! class_exists(DOMDocument::class)) {
-            return strip_tags($html, '<p><h2><h3><h4><ul><ol><li><strong><em><u><blockquote><pre><code><br><hr>');
+            return htmlspecialchars(strip_tags($html), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         }
         $previous = libxml_use_internal_errors(true);
         $doc = new DOMDocument('1.0', 'UTF-8');

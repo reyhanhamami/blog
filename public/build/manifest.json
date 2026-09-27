@@ -1,6 +1,36 @@
 {
+  "_index-CrEv19aR.js": {
+    "file": "assets/index-CrEv19aR.js",
+    "name": "index",
+    "isDynamicEntry": true
+  },
+  "node_modules/@fullcalendar/daygrid/index.js": {
+    "file": "assets/index-oOOrKQh-.js",
+    "name": "index",
+    "src": "node_modules/@fullcalendar/daygrid/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_index-CrEv19aR.js"
+    ]
+  },
+  "node_modules/sweetalert2/dist/sweetalert2.esm.all.js": {
+    "file": "assets/sweetalert2.esm.all-C2Wuf_dN.js",
+    "name": "sweetalert2.esm.all",
+    "src": "node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/tom-select/dist/css/tom-select.css": {
+    "file": "assets/tom-select-C5R4WAJZ.css",
+    "src": "node_modules/tom-select/dist/css/tom-select.css"
+  },
+  "node_modules/tom-select/dist/esm/tom-select.complete.js": {
+    "file": "assets/tom-select.complete-TNxcEJom.js",
+    "name": "tom-select.complete",
+    "src": "node_modules/tom-select/dist/esm/tom-select.complete.js",
+    "isDynamicEntry": true
+  },
   "resources/css/app.css": {
-    "file": "assets/app-DSD7Rvkx.css",
+    "file": "assets/app-B4lAaUth.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -8,12 +38,17 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CyKapxMN.js",
+    "file": "assets/app-xiNQyGRR.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
-    "css": [
-      "assets/app-C5R4WAJZ.css"
+    "dynamicImports": [
+      "node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
+      "node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
+      "node_modules/tom-select/dist/esm/tom-select.complete.js",
+      "node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
+      "_index-CrEv19aR.js",
+      "node_modules/@fullcalendar/daygrid/index.js"
     ]
   }
 }

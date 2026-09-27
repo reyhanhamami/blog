@@ -137,7 +137,7 @@ class CatalogController extends Controller
         $rules['slug'] = ['nullable', 'string', 'max:191'];
         $data = $request->validate($rules);
         $name = $data['title'] ?? $data['name'];
-        $data['slug'] = Str::slug($data['slug'] ?: $name);
+        $data['slug'] = Str::slug(($data['slug'] ?? '') ?: $name);
         $slugQuery = in_array($module, ['categories', 'videos', 'quizzes', 'learning-paths', 'courses'], true) ? $config['model']::withTrashed() : $config['model']::query();
         if ($slugQuery->where('slug', $data['slug'])->when($item->exists, fn ($q) => $q->where('id', '!=', $item->id))->exists()) {
             throw ValidationException::withMessages(['slug' => 'Slug sudah digunakan.']);

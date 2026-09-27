@@ -1,11 +1,6 @@
 import './bootstrap';
 import { initNumericMasks } from './numeric-mask';
-import Swal from 'sweetalert2';
-import TomSelect from 'tom-select';
-import 'tom-select/dist/css/tom-select.css';
 import Prism from 'prismjs';
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-javascript';
@@ -17,15 +12,42 @@ import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-go';
 
+let Swal;
+let TomSelect;
+let Calendar;
+let dayGridPlugin;
+let initGeneration = 0;
+document.addEventListener('submit', async event => {
+    const form = event.target.closest('form[data-confirm]');
+    if (!form || form.dataset.confirmed) return;
+    event.preventDefault();
+    Swal ||= (await import('sweetalert2')).default;
+    const result = await Swal.fire({ title: form.dataset.confirm, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, lanjutkan', cancelButtonText: 'Batal', confirmButtonColor: '#dc2626' });
+    if (result.isConfirmed) { form.dataset.confirmed = '1'; form.requestSubmit(event.submitter || undefined); }
+}, true);
 const selects = new Set();
 let calendar = null;
 let currentEditor = null;
-function initPage() {
+async function initPage() {
+    const generation = ++initGeneration;
+    if (document.body?.dataset.cms === '1') {
+        Swal ||= (await import('sweetalert2')).default;
+        if (document.querySelector('[data-search-select]') && !TomSelect) {
+            TomSelect = (await import('tom-select')).default;
+            await import('tom-select/dist/css/tom-select.css');
+        }
+    }
+    if (document.querySelector('[data-toast]') && !Swal) Swal = (await import('sweetalert2')).default;
+    if (generation !== initGeneration) return;
     initEditor();
     initNumericMasks();
-    document.querySelector('[data-select-all]')?.addEventListener('change', event => {
-        document.querySelectorAll('input[name="ids[]"]:not(:disabled)').forEach(input => { input.checked = event.target.checked; });
-    });
+    const selectAll = document.querySelector('[data-select-all]');
+    if (selectAll && !selectAll.dataset.bound) {
+        selectAll.dataset.bound = '1';
+        selectAll.addEventListener('change', event => {
+            document.querySelectorAll('input[name="ids[]"]:not(:disabled)').forEach(input => { input.checked = event.target.checked; });
+        });
+    }
     document.querySelectorAll('[data-search-select]').forEach(element => {
         if (element.tomselect) return;
         selects.add(new TomSelect(element, { plugins: element.multiple ? ['remove_button'] : ['clear_button'], create: false, allowEmptyOption: true }));
@@ -40,18 +62,29 @@ function initPage() {
         });
         source.dataset.bound = '1';
     }
-    document.querySelectorAll('form[data-confirm]').forEach(form => {
-        if (form.dataset.bound) return;
-        form.dataset.bound = '1';
-        form.addEventListener('submit', async event => {
-            if (form.dataset.confirmed) return;
-            event.preventDefault();
-            const result = await Swal.fire({ title: form.dataset.confirm, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, lanjutkan', cancelButtonText: 'Batal', confirmButtonColor: '#dc2626' });
-            if (result.isConfirmed) { form.dataset.confirmed = '1'; form.requestSubmit(); }
+    document.querySelectorAll('form').forEach(form => {
+        if (form.dataset.submitBound || form.method.toLowerCase() === 'get' || form.hasAttribute('wire:submit')) return;
+        form.dataset.submitBound = '1';
+        form.addEventListener('submit', event => {
+            if (event.defaultPrevented) return;
+            if (form.dataset.submitting) { event.preventDefault(); return; }
+            form.dataset.submitting = '1';
+            form.setAttribute('aria-busy', 'true');
+            form.querySelectorAll('[data-submitter-clone]').forEach(input => input.remove());
+            const submitter = event.submitter;
+            if (submitter?.name) {
+                const value = document.createElement('input');
+                value.type = 'hidden'; value.name = submitter.name; value.value = submitter.value; value.dataset.submitterClone = '1';
+                form.append(value);
+            }
+            form.querySelectorAll('button[type="submit"], button:not([type])').forEach(button => {
+                button.disabled = true;
+                button.classList.add('opacity-60', 'cursor-wait');
+            });
         });
     });
     document.querySelectorAll('[data-toast]').forEach(element => {
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: element.textContent.trim(), showConfirmButton: false, timer: 3000 });
+        Swal.fire({ toast: true, position: 'top-end', icon: element.dataset.toastIcon || 'success', title: element.textContent.trim(), showConfirmButton: false, timer: 3000 });
         element.remove();
     });
     document.querySelectorAll('.article-content pre code').forEach(block => {
@@ -77,6 +110,10 @@ function initPage() {
     const calendarElement = document.querySelector('#editorial-calendar');
     const eventsElement = document.querySelector('#editorial-events');
     if (calendarElement && eventsElement && !calendar) {
+        if (!Calendar) {
+            [{ Calendar }, { default: dayGridPlugin }] = await Promise.all([import('@fullcalendar/core'), import('@fullcalendar/daygrid')]);
+        }
+        if (generation !== initGeneration) return;
         calendar = new Calendar(calendarElement, { plugins: [dayGridPlugin], initialView: 'dayGridMonth', locale: 'id', events: JSON.parse(eventsElement.textContent), height: 'auto' });
         calendar.render();
     }
@@ -111,7 +148,7 @@ function initPage() {
     Prism.highlightAllUnder(document.querySelector('main') || document);
 }
 document.addEventListener('livewire:navigate', () => document.querySelector('#nav-progress')?.classList.remove('hidden'));
-document.addEventListener('livewire:navigating', () => { selects.forEach(select => select.destroy()); selects.clear(); calendar?.destroy(); calendar = null; currentEditor = null; });
+document.addEventListener('livewire:navigating', () => { initGeneration++; selects.forEach(select => select.destroy()); selects.clear(); calendar?.destroy(); calendar = null; currentEditor = null; });
 document.addEventListener('livewire:navigated', () => { document.querySelector('#nav-progress')?.classList.add('hidden'); initPage(); });
 document.addEventListener('DOMContentLoaded', initPage);
 function initEditor() {
@@ -180,3 +217,11 @@ document.addEventListener('livewire:navigate', event => {
     const read = Math.max(0, Math.min(100, ((window.scrollY - article.offsetTop) / max) * 100));
     bar.style.width = `${read}%`;
 }, { passive: true });
+window.addEventListener('pageshow', () => {
+    document.querySelectorAll('form[data-submitting]').forEach(form => {
+        delete form.dataset.submitting;
+        form.removeAttribute('aria-busy');
+        form.querySelectorAll('[data-submitter-clone]').forEach(input => input.remove());
+        form.querySelectorAll('button[type="submit"], button:not([type])').forEach(button => { button.disabled = false; button.classList.remove('opacity-60', 'cursor-wait'); });
+    });
+});

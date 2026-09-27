@@ -6,7 +6,7 @@
 @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))) @vite(['resources/css/app.css','resources/js/app.js']) @endif
 @livewireStyles
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body data-cms="1" class="bg-slate-50 text-slate-900">
 <div id="nav-progress" class="fixed left-0 top-0 z-50 hidden h-1 w-full animate-pulse bg-indigo-600"></div>
 <div class="min-h-screen lg:flex">
 <aside class="w-full shrink-0 border-b border-slate-200 bg-slate-950 p-5 text-white lg:min-h-screen lg:w-64 lg:border-b-0">
@@ -39,7 +39,8 @@
 <div class="flex items-center gap-4 text-sm"><a wire:navigate href="{{ route('home') }}" class="text-indigo-700 hover:underline">Lihat blog ↗</a><form action="{{ route('admin.logout') }}" method="post">@csrf<button class="text-slate-600 hover:text-red-600">Keluar</button></form></div>
 </header>
 <main class="mx-auto max-w-7xl p-5 lg:p-8" wire:transition.navigate>
-@if(session('success'))<div data-toast class="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{{ session('success') }}</div>@endif
+@if(session('success'))<div data-toast data-toast-icon="success" hidden>{{ session('success') }}</div>@endif
+@if(session('error'))<div data-toast data-toast-icon="error" hidden>{{ session('error') }}</div>@endif
 @yield('content')
 </main>
 </div>

@@ -52,4 +52,4 @@ Editor artikel menyimpan HTML yang dibersihkan melalui allowlist. Embed YouTube 
 
 Build aset di mesin development dan unggah `public/build` bersama kode aplikasi. Arahkan document root domain ke `public`. `public/uploads` harus dapat ditulis oleh PHP. Pastikan `APP_DEBUG=false`, `APP_URL` benar, dan `APP_KEY` unik. Tidak diperlukan Node runtime, Redis, Supervisor, atau proses queue permanen.
 
-Dokumen lain: [arsitektur](docs/architecture.md), [SEO](docs/seo.md), [alur konten](docs/content-workflow.md), [pengujian](docs/testing.md).
+Dokumen lain: [arsitektur](docs/architecture.md), [SEO](docs/seo.md), [alur konten](docs/content-workflow.md), [pengujian](docs/testing.md), [audit pra-produksi](docs/preproduction-qa.md).

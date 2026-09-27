@@ -27,7 +27,7 @@ class PublicContentController extends Controller
     public function home()
     {
         return view('public.home', [
-            'featured' => Post::published()->where('is_featured', true)->latest('published_at')->take(3)->get(),
+            'featured' => Post::published()->with(['category', 'author'])->where('is_featured', true)->latest('published_at')->take(3)->get(),
             'posts' => Post::published()->with(['category', 'author'])->latest('published_at')->paginate(12),
             'topics' => Topic::orderBy('name')->take(12)->get(),
             'videos' => Video::published()->latest('published_at')->take(4)->get(),
@@ -96,9 +96,9 @@ class PublicContentController extends Controller
         if (auth()->check()) {
             DB::table('reading_history')->updateOrInsert(['user_id' => auth()->id(), 'post_id' => $post->id], ['last_read_at' => now()]);
         }
-        $related = $post->relatedPosts()->published()->latest('published_at')->take(3)->get();
+        $related = $post->relatedPosts()->published()->with(['category', 'author'])->latest('published_at')->take(3)->get();
         if ($related->isEmpty()) {
-            $related = Post::published()->whereKeyNot($post->id)->when($post->category_id, fn ($q) => $q->where('category_id', $post->category_id))->latest('published_at')->take(3)->get();
+            $related = Post::published()->with(['category', 'author'])->whereKeyNot($post->id)->when($post->category_id, fn ($q) => $q->where('category_id', $post->category_id))->latest('published_at')->take(3)->get();
         }
         $questions = $post->questions()->where('status', 'approved')->with('answers.user')->latest()->take(30)->get();
 
