@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Topic;
 use App\Models\Video;
 use App\Services\ArticleNavigation;
+use App\Services\HomepageContentService;
 use App\Services\QuizGrader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,17 +27,19 @@ class PublicContentController extends Controller
         return view('public.page', compact('page'));
     }
 
-    public function home()
+    public function home(HomepageContentService $homepage)
     {
-        return view('public.home', [
-            'featured' => Post::published()->with(['category', 'author'])->where('is_featured', true)->latest('published_at')->take(3)->get(),
-            'posts' => Post::published()->with(['category', 'author'])->latest('published_at')->paginate(12),
-            'topics' => Topic::orderBy('name')->take(12)->get(),
-            'videos' => Video::published()->latest('published_at')->take(4)->get(),
-            'quizzes' => Quiz::where('status', 'published')->latest()->take(4)->get(),
-            'paths' => LearningPath::where('status', 'published')->latest()->take(4)->get(),
-            'courses' => Course::where('status', 'published')->latest()->take(4)->get(),
-        ]);
+        return view('public.home', $homepage->content());
+    }
+
+    public function categories()
+    {
+        $categories = Category::query()->where('is_active', true)
+            ->whereHas('posts', fn ($query) => $query->published()->where('noindex', false))
+            ->withCount(['posts as published_posts_count' => fn ($query) => $query->published()->where('noindex', false)])
+            ->orderByDesc('published_posts_count')->paginate(24);
+
+        return view('public.categories', compact('categories'));
     }
 
     public function search(Request $request)

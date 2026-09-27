@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ReaderAuthController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ReaderController;
@@ -159,6 +160,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
 
 Route::get('/', [PublicContentController::class, 'home'])->name('home');
 Route::get('/cari', [PublicContentController::class, 'search'])->name('search');
+Route::get('/newsletter/unsubscribe', [NewsletterController::class, 'unsubscribeForm'])->name('newsletter.unsubscribe.form');
+Route::post('/newsletter/unsubscribe', [NewsletterController::class, 'unsubscribe'])->middleware('throttle:5,1')->name('newsletter.unsubscribe');
+Route::get('/newsletter/unsubscribe/confirm/{subscriber}', [NewsletterController::class, 'confirmUnsubscribe'])->middleware('signed')->name('newsletter.unsubscribe.confirm');
+Route::get('/kategori', [PublicContentController::class, 'categories'])->name('categories.index');
 Route::get('/kategori/{category:slug}', [PublicContentController::class, 'category'])->name('category.show');
 Route::get('/tag/{tag:slug}', [PublicContentController::class, 'tag'])->name('tag.show');
 Route::get('/topik/{topic:slug}', [PublicContentController::class, 'topic'])->name('topic.show');

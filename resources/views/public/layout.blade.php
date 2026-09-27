@@ -1,21 +1,63 @@
-<?php
+@php
+use App\Models\Menu;
+use App\Models\Page;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 
-$siteName = Setting::valueFor('site_name', 'Besofton Insights'); ?>
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>@yield('seo_title', $siteName.' | Artikel dan tutorial teknologi')</title>
-<meta name="description" content="@yield('seo_description', \App\Models\Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
-<meta name="robots" content="{{ config('app.env') === 'production' ? trim($__env->yieldContent('robots', 'index,follow')) : 'noindex,nofollow' }}">
-<link rel="canonical" href="@yield('canonical', url()->current())">
-<link rel="icon" href="{{ \App\Models\Setting::valueFor('favicon_url', asset('favicon.svg')) }}">
-@if(\App\Models\Setting::valueFor('google_verification'))<meta name="google-site-verification" content="{{ \App\Models\Setting::valueFor('google_verification') }}">@endif
-<meta property="og:type" content="@yield('og_type', 'website')"><meta property="og:title" content="@yield('og_title', $siteName)"><meta property="og:description" content="@yield('og_description', \App\Models\Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))"><meta property="og:url" content="@yield('canonical', url()->current())">
-@if(trim($__env->yieldContent('og_image')) !== '')<meta property="og:image" content="@yield('og_image')"><meta name="twitter:card" content="summary_large_image">@endif
-@if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))) @vite(['resources/css/app.css','resources/js/app.js']) @endif
-<?php $siteSchema = ['@context' => 'https://schema.org', '@graph' => [['@type' => 'Organization', 'name' => $siteName, 'url' => route('home')], ['@type' => 'WebSite', 'name' => $siteName, 'url' => route('home')]]]; ?>
-<script type="application/ld+json">{!! json_encode($siteSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
-@livewireStyles @stack('head')</head>
-<body class="bg-white text-slate-900"><div id="nav-progress" class="fixed left-0 top-0 z-50 hidden h-1 w-full animate-pulse bg-indigo-600"></div>
-<header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur"><div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4"><a wire:navigate href="{{ route('home') }}" class="text-xl font-extrabold tracking-tight text-indigo-800">@if(\App\Models\Setting::valueFor('logo_url'))<img src="{{ \App\Models\Setting::valueFor('logo_url') }}" alt="{{ $siteName }}" class="h-8 w-auto">@else{{ $siteName }}@endif</a><nav class="flex items-center gap-5 text-sm font-medium">@forelse(\App\Models\Menu::links('header') as $link)<a href="{{ $link->url }}" @if(str_starts_with($link->url, '/')) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif class="hover:text-indigo-700">{{ $link->label }}</a>@empty<a wire:navigate href="{{ route('home') }}">Beranda</a><a wire:navigate href="{{ route('search') }}">Cari</a>@endforelse<a href="{{ route('feed') }}" class="hover:text-indigo-700">RSS</a>@auth<a wire:navigate href="{{ route('reader.account') }}" class="hover:text-indigo-700">Akun</a>@else<a wire:navigate href="{{ route('login') }}" class="hover:text-indigo-700">Masuk</a>@endauth</nav></div></header>
-<main class="mx-auto min-h-[60vh] max-w-7xl px-5 py-8 md:py-12" wire:transition.navigate>@if(session('success'))<div data-toast hidden>{{ session('success') }}</div>@endif @yield('content')</main>
-<footer class="border-t border-slate-200 bg-slate-50"><div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-slate-500"><span>© {{ date('Y') }} {{ $siteName }}</span><nav class="flex flex-wrap gap-4">@forelse(\App\Models\Menu::links('footer') as $link)<a href="{{ $link->url }}" @if(str_starts_with($link->url, '/')) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif>{{ $link->label }}</a>@empty<a wire:navigate href="{{ route('page.about') }}">Tentang</a><a wire:navigate href="{{ route('page.privacy-policy') }}">Privasi</a><a wire:navigate href="{{ route('page.editorial-policy') }}">Kebijakan editorial</a>@endforelse</nav></div></footer>@livewireScripts</body></html>
+$siteName = Setting::valueFor('site_name', 'Besofton Insights');
+$logoUrl = Storage::disk('public')->url('logo.png');
+$headerLinks = Menu::links('header');
+$footerLinks = Menu::links('footer');
+$contactUrl = Setting::valueFor('contact_url');
+if (! $contactUrl && Page::where('slug', 'contact')->where('is_published', true)->exists()) {
+    $contactUrl = route('page.contact');
+}
+$contactIsExternal = $contactUrl && preg_match('~^https?://~i', $contactUrl);
+if ($contactUrl && ! $contactIsExternal && ! str_starts_with($contactUrl, '/')) {
+    $contactUrl = '';
+}
+$socialLinks = collect([
+    'Instagram' => Setting::valueFor('instagram_url'),
+    'LinkedIn' => Setting::valueFor('linkedin_url'),
+    'YouTube' => Setting::valueFor('youtube_url'),
+])->filter(fn ($url) => (bool) preg_match('~^https?://~i', $url));
+@endphp
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>@yield('seo_title', $siteName.' | Artikel dan tutorial teknologi')</title>
+    <meta name="description" content="@yield('seo_description', Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
+    <meta name="robots" content="{{ config('app.env') === 'production' ? trim($__env->yieldContent('robots', 'index,follow')) : 'noindex,nofollow' }}">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+    <link rel="icon" href="{{ Setting::valueFor('favicon_url', asset('favicon.svg')) }}">
+    @if(Setting::valueFor('google_verification'))<meta name="google-site-verification" content="{{ Setting::valueFor('google_verification') }}">@endif
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="@yield('og_title', $siteName)">
+    <meta property="og:description" content="@yield('og_description', Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
+    <meta property="og:url" content="@yield('canonical', url()->current())">
+    @if(trim($__env->yieldContent('og_image')) !== '')<meta property="og:image" content="@yield('og_image')"><meta name="twitter:card" content="summary_large_image">@endif
+    @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @if(request()->routeIs('home'))
+            @vite(['resources/css/public.css', 'resources/js/public-base.js'])
+        @else
+            @vite(['resources/css/app.css', 'resources/css/public.css', 'resources/js/app.js'])
+        @endif
+    @endif
+    @php $siteSchema = ['@context' => 'https://schema.org', '@graph' => [['@type' => 'Organization', 'name' => $siteName, 'url' => route('home')], ['@type' => 'WebSite', 'name' => $siteName, 'url' => route('home')]]]; @endphp
+    <script type="application/ld+json">{!! json_encode($siteSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+    @livewireStyles
+    @stack('head')
+</head>
+<body class="public-body">
+    <div id="nav-progress" class="fixed left-0 top-0 z-50 hidden h-1 w-full animate-pulse bg-amber-500"></div>
+    @include('public.partials.site-header')
+    <main class="public-main @yield('main_class')" wire:transition.navigate>
+        @if(session('success'))<div data-toast hidden>{{ session('success') }}</div>@endif
+        @yield('content')
+    </main>
+    @include('public.partials.site-footer')
+    @livewireScripts
+</body>
+</html>
