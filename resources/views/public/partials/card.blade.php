@@ -1,1 +1,12 @@
-<article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-lg">@if($post->featured_image)<a wire:navigate href="{{ route('post.show', $post->slug) }}"><img src="{{ $post->featured_image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" loading="lazy" width="640" height="360" class="aspect-video w-full object-cover"></a>@endif<div class="p-5"><p class="text-xs font-semibold uppercase text-indigo-700">{{ $post->category?->name ?? ucfirst($post->content_type) }}</p><h3 class="mt-2 text-xl font-bold leading-snug"><a wire:navigate href="{{ route('post.show', $post->slug) }}" class="hover:text-indigo-700">{{ $post->title }}</a></h3><p class="mt-3 line-clamp-3 text-sm text-slate-600">{{ $post->excerpt }}</p><p class="mt-4 text-xs text-slate-500">{{ $post->author?->name ?? 'Tim Besofton' }} · {{ $post->published_at?->timezone('Asia/Jakarta')->format('d M Y') }}</p></div></article>
+<article class="public-card">
+    <a wire:navigate href="{{ route('post.show', $post->slug) }}" class="public-card-media" aria-label="Baca {{ $post->title }}">
+        @if($post->featured_image)<img src="{{ $post->featured_image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" loading="lazy" width="640" height="360">
+        @else<div class="public-card-fallback" aria-hidden="true"><span>IDE. PANDUAN.<br><em>INSIGHTS.</em></span></div>@endif
+    </a>
+    <div class="public-card-body">
+        <span class="public-badge">{{ $post->category?->name ?? ucfirst(str_replace('_', ' ', $post->content_type)) }}</span>
+        <h3><a wire:navigate href="{{ route('post.show', $post->slug) }}">{{ $post->title }}</a></h3>
+        @if($post->excerpt)<p>{{ $post->excerpt }}</p>@endif
+        <p class="public-card-meta">{{ $post->author?->name ?? 'Tim Besofton' }} · <time datetime="{{ $post->published_at?->toDateString() }}">{{ $post->published_at?->timezone('Asia/Jakarta')->format('d M Y') }}</time></p>
+    </div>
+</article>

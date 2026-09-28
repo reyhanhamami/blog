@@ -2,5 +2,5 @@
 @section('seo_title', 'Halaman tidak ditemukan | Besofton Insights')
 @section('robots', 'noindex,nofollow')
 @section('content')
-<div class="mx-auto max-w-2xl py-20 text-center"><p class="text-7xl font-black text-indigo-700">404</p><h1 class="mt-5 text-3xl font-bold">Halaman tidak ditemukan</h1><p class="mt-3 text-slate-600">Coba cari artikel lain atau kembali ke beranda.</p><form action="{{ route('search') }}" class="mx-auto mt-8 flex max-w-md gap-2"><input class="form-input" name="q" placeholder="Cari artikel"><button class="btn-primary">Cari</button></form><a wire:navigate href="{{ route('home') }}" class="mt-8 inline-block text-indigo-700">Kembali ke beranda</a></div>
+<div class="public-error-page"><p class="public-error-code">404</p><p class="public-kicker">HALAMAN TIDAK DITEMUKAN</p><h1>Sepertinya Anda tersesat.</h1><p>Cari topik lain atau kembali ke beranda untuk menemukan ide baru.</p><form action="{{ route('search') }}" method="get" class="public-search-fields" role="search"><label class="sr-only" for="error-search">Cari artikel</label><input id="error-search" class="public-input" name="q" type="search" placeholder="Cari artikel atau topik"><button class="public-button is-gold">Cari →</button></form><a wire:navigate href="{{ route('home') }}" class="public-outline-button">Kembali ke beranda</a></div>
 @endsection

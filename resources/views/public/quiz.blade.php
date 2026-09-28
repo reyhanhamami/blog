@@ -2,5 +2,9 @@
 @section('seo_title', $quiz->title.' | Besofton Insights')
 @section('seo_description', $quiz->description ?: $quiz->title)
 @section('content')
-<div class="mx-auto max-w-3xl"><nav class="mb-6 text-sm text-slate-500"><a wire:navigate href="{{ route('home') }}">Beranda</a> / Kuis</nav><h1 class="text-4xl font-bold">{{ $quiz->title }}</h1><p class="mt-4 text-slate-600">{{ $quiz->description }}</p><livewire:quiz-player :quiz="$quiz" /></div>
+<div class="public-shell">
+    <nav aria-label="Breadcrumb" class="public-breadcrumb"><a wire:navigate href="{{ route('home') }}">Beranda</a><span>/</span><span aria-current="page">Kuis</span></nav>
+    <header class="public-page-hero"><p class="public-kicker">UJI PEMAHAMAN</p><h1>{{ $quiz->title }}</h1>@if($quiz->description)<p>{{ $quiz->description }}</p>@endif</header>
+    <div class="public-narrow"><livewire:quiz-player :quiz="$quiz" /></div>
+</div>
 @endsection

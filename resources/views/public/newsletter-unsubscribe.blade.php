@@ -2,16 +2,5 @@
 @section('seo_title', 'Berhenti Berlangganan | Besofton Insights')
 @section('robots', 'noindex,nofollow')
 @section('content')
-<section class="mx-auto max-w-xl px-5 py-16 md:py-24">
-    <p class="public-eyebrow">BESOFTON INSIGHTS</p>
-    <h1 class="public-section-title mt-3">Berhenti berlangganan</h1>
-    <p class="mt-4 text-stone-600">Masukkan alamat email yang digunakan untuk newsletter. Kami akan mengirim tautan konfirmasi ke alamat tersebut.</p>
-    <form method="post" action="{{ route('newsletter.unsubscribe') }}" class="mt-8 space-y-4">
-        @csrf
-        <label for="unsubscribe-email" class="block text-sm font-semibold">Alamat email</label>
-        <input id="unsubscribe-email" class="form-input" name="email" type="email" autocomplete="email" required value="{{ old('email') }}">
-        @error('email')<p class="error">{{ $message }}</p>@enderror
-        <button class="public-gold-button" type="submit">Berhenti berlangganan <span aria-hidden="true">→</span></button>
-    </form>
-</section>
+<div class="public-narrow"><nav aria-label="Breadcrumb" class="public-breadcrumb"><a wire:navigate href="{{ route('home') }}">Beranda</a><span>/</span><span aria-current="page">Newsletter</span></nav><header class="public-page-hero"><p class="public-kicker">BESOFTON INSIGHTS</p><h1>Berhenti berlangganan</h1><p>Masukkan alamat email newsletter Anda. Kami akan mengirim tautan konfirmasi.</p></header><form method="post" action="{{ route('newsletter.unsubscribe') }}" class="public-panel public-form-stack public-section">@csrf<div class="public-field"><label for="unsubscribe-email">Alamat email</label><input id="unsubscribe-email" class="form-input" name="email" type="email" autocomplete="email" required value="{{ old('email') }}">@error('email')<p class="error">{{ $message }}</p>@enderror</div><button class="public-button is-gold" type="submit">Berhenti berlangganan →</button></form></div>
 @endsection

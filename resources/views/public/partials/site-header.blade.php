@@ -6,13 +6,13 @@
         </a>
         <nav class="public-desktop-nav" aria-label="Navigasi utama">
             @foreach($headerLinks as $link)
-                @php $isInsights = $link->url === '/'; $isInternal = str_starts_with($link->url, '/'); @endphp
-                <a href="{{ $link->url }}" @if($isInternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif class="{{ $isInsights ? 'is-active' : '' }}" @if($isInsights) aria-current="page" @endif>{{ $isInsights ? 'Insights' : $link->label }}</a>
+                @php $isInsights = $link->url === '/'; $isInternal = str_starts_with($link->url, '/'); $active = $isInternal && ($isInsights ? request()->routeIs('home', 'post.show') : (request()->path() === ltrim($link->url, '/') || str_starts_with(request()->path(), trim($link->url, '/').'/'))); @endphp
+                <a href="{{ $link->url }}" @if($isInternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif class="{{ $active ? 'is-active' : '' }}" @if($active) aria-current="page" @endif>{{ $isInsights ? 'Insights' : $link->label }}</a>
             @endforeach
-            @unless($headerLinks->contains('url', '/'))<a wire:navigate href="{{ route('home') }}" class="is-active" aria-current="page">Insights</a>@endunless
+            @unless($headerLinks->contains('url', '/'))<a wire:navigate href="{{ route('home') }}" class="{{ request()->routeIs('home', 'post.show') ? 'is-active' : '' }}" @if(request()->routeIs('home', 'post.show')) aria-current="page" @endif>Insights</a>@endunless
         </nav>
         <div class="public-header-actions">
-            <div class="public-language" aria-label="Bahasa situs"><span class="is-active" lang="id">ID</span><span aria-disabled="true" title="Bahasa Inggris belum tersedia">EN</span></div>
+            <a wire:navigate href="{{ route('search') }}" class="public-search-link" aria-label="Cari artikel"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg></a>
             @if($contactUrl)
                 <a href="{{ $contactUrl }}" @if(! $contactIsExternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif class="public-contact-button">Hubungi Kami <span aria-hidden="true">↗</span></a>
             @endif
@@ -38,6 +38,7 @@
             <a href="{{ $link->url }}" @if($isInternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif @click="open = false">{{ $link->url === '/' ? 'Insights' : $link->label }}</a>
         @endforeach
         @unless($headerLinks->contains('url', '/'))<a wire:navigate href="{{ route('home') }}" @click="open = false">Insights</a>@endunless
+        <a wire:navigate href="{{ route('search') }}" @click="open = false">Cari artikel</a>
         @if($contactUrl)<a href="{{ $contactUrl }}" @if(! $contactIsExternal) wire:navigate @else target="_blank" rel="noopener noreferrer" @endif @click="open = false">Hubungi Kami ↗</a>@endif
         @auth<a wire:navigate href="{{ route('reader.account') }}" @click="open = false">Profil & Bookmark</a>
         <a wire:navigate href="{{ route('reader.account') }}#learning" @click="open = false">Lanjutkan Belajar</a>

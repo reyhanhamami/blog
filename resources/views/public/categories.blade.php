@@ -2,19 +2,10 @@
 @section('seo_title', 'Kategori Artikel | Besofton Insights')
 @section('seo_description', 'Jelajahi kategori artikel dan panduan Besofton Insights.')
 @section('content')
-<section class="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-16">
-    <p class="public-eyebrow">JELAJAHI WAWASAN</p>
-    <h1 class="public-section-title mt-3">Semua Kategori</h1>
-    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        @forelse($categories as $category)
-            <a wire:navigate href="{{ route('category.show', $category) }}" class="rounded-xl border border-stone-200 bg-white p-6 transition hover:border-amber-500">
-                <h2 class="text-xl font-bold">{{ $category->name }}</h2>
-                <p class="mt-2 text-sm text-stone-600">{{ $category->published_posts_count }} artikel</p>
-            </a>
-        @empty
-            <p class="text-stone-600">Kategori belum tersedia.</p>
-        @endforelse
-    </div>
-    <div class="mt-8">{{ $categories->links() }}</div>
-</section>
+<div class="public-shell">
+    <nav aria-label="Breadcrumb" class="public-breadcrumb"><a wire:navigate href="{{ route('home') }}">Beranda</a><span>/</span><span aria-current="page">Kategori</span></nav>
+    <header class="public-page-hero"><p class="public-kicker">JELAJAHI WAWASAN</p><h1>Semua Kategori</h1><p>Temukan panduan dan sudut pandang baru sesuai bidang yang ingin Anda dalami.</p></header>
+    <div class="public-card-grid public-section">@forelse($categories as $category)<a wire:navigate href="{{ route('category.show', $category) }}" class="public-card public-panel"><span class="public-badge">Kategori</span><h2>{{ $category->name }}</h2><p>{{ $category->published_posts_count }} artikel · Jelajahi →</p></a>@empty<div class="public-empty"><p>Kategori belum tersedia.</p><a wire:navigate href="{{ route('home') }}" class="public-outline-button">Kembali ke Insights</a></div>@endforelse</div>
+    <div class="public-pagination">{{ $categories->links('public.partials.pagination') }}</div>
+</div>
 @endsection

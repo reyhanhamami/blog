@@ -39,11 +39,7 @@ $socialLinks = collect([
     <meta property="og:url" content="@yield('canonical', url()->current())">
     @if(trim($__env->yieldContent('og_image')) !== '')<meta property="og:image" content="@yield('og_image')"><meta name="twitter:card" content="summary_large_image">@endif
     @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @if(request()->routeIs('home'))
-            @vite(['resources/css/public.css', 'resources/js/public-base.js'])
-        @else
-            @vite(['resources/css/app.css', 'resources/css/public.css', 'resources/js/app.js'])
-        @endif
+        @vite(['resources/css/public.css', 'resources/js/public.js'])
     @endif
     @php $siteSchema = ['@context' => 'https://schema.org', '@graph' => [['@type' => 'Organization', 'name' => $siteName, 'url' => route('home')], ['@type' => 'WebSite', 'name' => $siteName, 'url' => route('home')]]]; @endphp
     <script type="application/ld+json">{!! json_encode($siteSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
@@ -51,7 +47,7 @@ $socialLinks = collect([
     @stack('head')
 </head>
 <body class="public-body">
-    <div id="nav-progress" class="fixed left-0 top-0 z-50 hidden h-1 w-full animate-pulse bg-amber-500"></div>
+    <div id="nav-progress" hidden aria-hidden="true"></div>
     @include('public.partials.site-header')
     <main class="public-main @yield('main_class')" wire:transition.navigate>
         @if(session('success'))<div data-toast hidden>{{ session('success') }}</div>@endif
