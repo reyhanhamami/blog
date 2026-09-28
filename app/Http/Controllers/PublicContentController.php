@@ -42,6 +42,66 @@ class PublicContentController extends Controller
         return view('public.categories', compact('categories'));
     }
 
+    public function topics()
+    {
+        $topics = Topic::query()
+            ->whereHas('posts', fn ($query) => $query->published()->where('noindex', false))
+            ->withCount(['posts as published_posts_count' => fn ($query) => $query->published()->where('noindex', false)])
+            ->orderBy('name')->paginate(18);
+
+        return view('public.discovery', ['kind' => 'topics', 'title' => 'Jelajahi Topik', 'description' => 'Temukan artikel, tutorial, dan materi berdasarkan bidang yang ingin Anda pelajari.', 'items' => $topics]);
+    }
+
+    public function paths()
+    {
+        $paths = LearningPath::query()->where('status', 'published')
+            ->withCount('items')->latest()->paginate(12);
+
+        return view('public.discovery', ['kind' => 'paths', 'title' => 'Jalur Belajar', 'description' => 'Ikuti rangkaian materi yang disusun untuk membantu Anda belajar langkah demi langkah.', 'items' => $paths]);
+    }
+
+    public function courses()
+    {
+        $courses = Course::query()->where('status', 'published')
+            ->withCount('modules')->latest()->paginate(12);
+        $courseIds = $courses->getCollection()->modelKeys();
+        $lessonCounts = DB::table('course_lessons')->join('course_modules', 'course_modules.id', '=', 'course_lessons.course_module_id')
+            ->whereIn('course_modules.course_id', $courseIds)
+            ->selectRaw('course_modules.course_id, COUNT(*) as total')
+            ->groupBy('course_modules.course_id')->pluck('total', 'course_id');
+        $completedCounts = collect();
+        $lastLessons = collect();
+        $nextLessons = collect();
+        if (auth()->check()) {
+            $completedCounts = DB::table('course_progress')->join('course_lessons', 'course_lessons.id', '=', 'course_progress.course_lesson_id')
+                ->join('course_modules', 'course_modules.id', '=', 'course_lessons.course_module_id')
+                ->where('course_progress.user_id', auth()->id())->whereIn('course_modules.course_id', $courseIds)
+                ->selectRaw('course_modules.course_id, COUNT(*) as total')
+                ->groupBy('course_modules.course_id')->pluck('total', 'course_id');
+            $lastLessons = DB::table('course_activity')->where('user_id', auth()->id())
+                ->whereIn('course_id', $courseIds)->pluck('last_lesson_id', 'course_id');
+            $nextLessons = DB::table('course_lessons')->join('course_modules', 'course_modules.id', '=', 'course_lessons.course_module_id')
+                ->leftJoin('course_progress', function ($join) {
+                    $join->on('course_progress.course_lesson_id', '=', 'course_lessons.id')
+                        ->where('course_progress.user_id', auth()->id());
+                })
+                ->whereIn('course_modules.course_id', $courseIds)->whereNull('course_progress.id')
+                ->orderBy('course_modules.sort_order')->orderBy('course_modules.id')
+                ->orderBy('course_lessons.sort_order')->orderBy('course_lessons.id')
+                ->get(['course_modules.course_id', 'course_lessons.id'])
+                ->unique('course_id')->pluck('id', 'course_id');
+        }
+
+        return view('public.discovery', ['kind' => 'courses', 'title' => 'Kelas', 'description' => 'Pelajari topik secara lebih mendalam melalui materi yang tersusun dalam modul dan pelajaran.', 'items' => $courses, 'lessonCounts' => $lessonCounts, 'completedCounts' => $completedCounts, 'lastLessons' => $lastLessons, 'nextLessons' => $nextLessons]);
+    }
+
+    public function videos()
+    {
+        $videos = Video::published()->latest('published_at')->paginate(12);
+
+        return view('public.discovery', ['kind' => 'videos', 'title' => 'Video', 'description' => 'Tonton penjelasan dan tutorial dari koleksi Besofton Insights.', 'items' => $videos]);
+    }
+
     public function search(Request $request)
     {
         $term = trim((string) $request->get('q'));

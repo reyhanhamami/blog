@@ -41,11 +41,12 @@ class DatabaseSeeder extends Seeder
         ] as $slug => [$title, $content]) {
             Page::firstOrCreate(['slug' => $slug], ['title' => $title, 'content' => $content, 'is_published' => true]);
         }
-        foreach (['header' => ['Beranda' => '/', 'Cari' => '/cari'], 'footer' => ['Tentang' => '/about', 'Privasi' => '/privacy-policy', 'Kebijakan editorial' => '/editorial-policy']] as $location => $links) {
+        foreach (['footer' => ['Tentang' => '/about', 'Privasi' => '/privacy-policy', 'Kebijakan editorial' => '/editorial-policy']] as $location => $links) {
             $menu = Menu::firstOrCreate(['location' => $location], ['name' => ucfirst($location).' Menu']);
             foreach ($links as $label => $url) {
                 $menu->items()->firstOrCreate(['url' => $url], ['label' => $label, 'sort_order' => 0, 'is_active' => true]);
             }
         }
+        $this->call(HeaderNavigationSeeder::class);
     }
 }

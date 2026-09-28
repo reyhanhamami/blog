@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Storage;
 
 $siteName = Setting::valueFor('site_name', 'Besofton Insights');
 $logoUrl = Storage::disk('public')->url('logo.png');
-$headerLinks = Menu::links('header');
+$headerLinks = Menu::links('header')->filter(fn ($link) => $link->parent_id === null && $link->url !== '/cari')->values();
+if ($headerLinks->isEmpty()) {
+    $headerLinks = \App\Support\PublicNavigation::fallback();
+}
 $footerLinks = Menu::links('footer');
 $contactUrl = Setting::valueFor('contact_url');
 if (! $contactUrl && Page::where('slug', 'contact')->where('is_published', true)->exists()) {

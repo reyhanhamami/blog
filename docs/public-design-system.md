@@ -22,7 +22,7 @@ Gold is used for emphasis and controls. Small text on cream uses dark brown (`#8
 - Font: Outfit with Arial fallback. Body starts at 17px; long-form article body is 19px desktop and 18px mobile with 1.78 line height.
 - Page and article titles use responsive clamps, heavy weight, tight tracking, and readable line height. Article content stays within 820px while its full layout allows a sticky TOC sidebar.
 - The public shell is up to 1260px wide. Discovery cards use three columns, then two, then one. Course and account grids collapse on smaller screens.
-- Breakpoints: 1100px for compact desktop navigation, 900px for article/course layout, 760px for mobile navigation, and 530px for one-column content cards.
+- Breakpoints: 1200px and 1100px progressively compact desktop navigation; below 980px the header uses the mobile menu. Article/course layouts change at 900px, and content cards become one column at 530px.
 
 ## Reusable components
 
@@ -39,7 +39,9 @@ Gold is used for emphasis and controls. Small text on cream uses dark brown (`#8
 | Article prose | `.prose-besofton` | Server-rendered rich content |
 | Steps / progress | `.public-step`, `.public-progress` | Path, course, lesson, quiz |
 
-The header and footer read menu links from the menu database and only render external social/contact links when configured. The public language switch is removed; localization infrastructure is untouched. Mobile navigation uses Alpine and closes on Escape or navigation. Internal links retain `wire:navigate`.
+The header and footer read menu links from the menu database and only render external social/contact links when configured. `HeaderNavigationSeeder` conservatively adds the five product destinations (Insights, Topik, Belajar, Kelas, Video) and deactivates only the original default Cari menu item. The header uses those database links, falling back to the same five routes when the header menu is empty. Search is a separate action linking to `/cari`. The public language switch is removed; localization infrastructure is untouched. Mobile navigation uses Alpine, locks background scrolling, and closes on Escape or navigation. Internal links retain `wire:navigate`.
+
+The discovery routes `/topik`, `/belajar`, `/kelas`, and `/video` use the existing topic, learning path, course, and video records. They show published content with pagination and exclude drafts and soft deleted records. Each page has its own title, description, and canonical URL.
 
 ## Content and accessibility
 

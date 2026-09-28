@@ -507,3 +507,68 @@ a.public-card:hover, .public-card:hover { border-color: #ba8736; transform: tran
 .article-newsletter p:last-child { margin-bottom: 0; }
 @media (max-width: 900px) { .public-course-layout, .public-auth, .article-newsletter { grid-template-columns: 1fr; } .public-course-aside { position: static; } }
 @media (max-width: 620px) { .public-search-fields { flex-direction: column; } .public-search-fields select { width: 100%; } .public-account-grid { grid-template-columns: 1fr; } .public-account-hero { align-items: flex-start; flex-direction: column; } .public-video-frame button { width: 86px; height: 86px; font-size: 24px; } .public-video-frame button span { font-size: 11px; } .public-step { padding: 14px; } .public-step strong { font-size: 17px; } }
+
+/* Product navigation */
+.public-site-header { background: #fbf9f5f5; backdrop-filter: blur(5px); }
+.home-container, .public-header-inner { width: min(100% - 80px, 1440px); }
+.public-header-inner { grid-template-columns: auto minmax(0, 1fr) auto; gap: clamp(18px, 2.5vw, 40px); }
+.public-brand { width: 224px; }
+.public-desktop-nav { justify-content: center; gap: clamp(22px, 2.3vw, 36px); }
+.public-desktop-nav a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 15px; font-size: 16px; font-weight: 550; line-height: 1; transition: color .18s ease; }
+.public-desktop-nav a:hover { color: #9a6214; }
+.public-desktop-nav a.is-active { font-weight: 700; }
+.public-desktop-nav a.is-active::after { bottom: 8px; }
+.public-header-actions { gap: 10px; }
+.public-search-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; height: 44px; padding: 0 15px; border-radius: 999px; font-size: 15px; line-height: 1; transition: background .18s ease, color .18s ease; }
+.public-search-link:hover, .public-search-link.is-active { background: #111; color: #fff; }
+.public-search-link svg { display: block; width: 20px; height: 20px; flex: none; }
+.public-account-link { display: inline-flex; align-items: center; justify-content: center; gap: 9px; height: 44px; padding: 0 17px; border-radius: 999px; font-size: 15px; font-weight: 650; line-height: 1; }
+.public-login-link { background: #111; color: #fff !important; }
+.public-login-link:hover { background: #453015; }
+.public-user-menu button.public-account-link { border: 1px solid var(--public-border); background: #fffdf9; }
+.public-account-avatar { display: grid; place-items: center; width: 28px; height: 28px; flex: none; overflow: hidden; border-radius: 50%; background: #1c1a17; color: #fff; font-size: 14px; }
+.public-account-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.public-account-caret { font-size: 18px; line-height: 0; transform: translateY(-3px); }
+.public-account-dropdown { width: 225px; padding: 8px; }
+.public-account-dropdown a, .public-account-dropdown button { padding: 12px; font-size: 14px; }
+.discovery-card { display: flex; flex-direction: column; align-items: flex-start; min-height: 210px; }
+.discovery-card h2 { margin: 16px 0 10px; }
+.discovery-card p { margin: 0 0 18px; }
+.discovery-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; margin-top: auto; padding-top: 20px; font-weight: 700; }
+.discovery-meta, .discovery-progress-label { color: var(--public-muted); font-size: 14px; }
+.discovery-card .public-progress { margin-top: 0; }
+@media (max-width: 1200px) {
+    .home-container, .public-header-inner { width: min(100% - 64px, 1440px); }
+    .public-header-inner { gap: 18px; }
+    .public-brand { width: 205px; }
+    .public-desktop-nav { gap: 20px; }
+    .public-desktop-nav a { font-size: 15px; }
+}
+@media (max-width: 1100px) {
+    .public-header-inner { grid-template-columns: auto minmax(0, 1fr) auto; }
+    .public-brand { width: 205px; }
+    .public-brand-text strong { font-size: 16px; }
+    .public-brand-text small { font-size: 6px; }
+    .public-desktop-nav { gap: 14px; }
+    .public-desktop-nav a { font-size: 14px; }
+    .public-search-link { padding-inline: 12px; }
+    .public-account-link { padding-inline: 13px; }
+}
+@media (max-width: 980px) {
+    .public-header-inner { width: min(100% - 40px, 1440px); grid-template-columns: 1fr auto auto; min-height: 72px; gap: 12px; }
+    .public-desktop-nav, .public-header-actions .public-account-link, .public-header-actions .public-user-menu { display: none; }
+    .public-header-actions { display: flex; }
+    .public-search-link { width: 44px; height: 44px; padding: 0; border-radius: 50%; }
+    .public-search-link span { display: none; }
+    .public-menu-toggle { display: flex; width: 44px; height: 44px; flex-direction: column; align-items: center; justify-content: center; gap: 5px; border: 1px solid var(--public-border); border-radius: 50%; background: transparent; cursor: pointer; }
+    .public-menu-toggle span { width: 18px; height: 2px; background: #111; }
+    .public-mobile-menu { position: absolute; top: 72px; left: 0; right: 0; display: flex; flex-direction: column; max-height: calc(100dvh - 72px); overflow-y: auto; overscroll-behavior: contain; padding: 20px max(20px, calc((100vw - 1440px) / 2)) 36px; background: #fbf9f5; box-shadow: 0 15px 24px #0002; }
+    .public-mobile-menu a, .public-mobile-menu form button { display: block; padding: 14px 4px; border-bottom: 1px solid #e9e0d4; font-size: clamp(20px, 2.4vw, 24px); font-weight: 600; }
+    .public-mobile-menu a.is-active { color: #9a6214; border-bottom-color: #c28c3c; }
+    .public-mobile-divider { height: 18px; }
+}
+@media (max-width: 530px) {
+    .public-header-inner { width: min(100% - 32px, 1440px); gap: 8px; }
+    .public-brand { width: min(200px, 48vw); }
+    .public-mobile-menu { padding-inline: 20px; }
+}

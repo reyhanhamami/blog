@@ -182,12 +182,16 @@ Route::get('/newsletter/unsubscribe/confirm/{subscriber}', [NewsletterController
 Route::get('/kategori', [PublicContentController::class, 'categories'])->name('categories.index');
 Route::get('/kategori/{category:slug}', [PublicContentController::class, 'category'])->name('category.show');
 Route::get('/tag/{tag:slug}', [PublicContentController::class, 'tag'])->name('tag.show');
+Route::get('/topik', [PublicContentController::class, 'topics'])->name('topics.index');
 Route::get('/topik/{topic:slug}', [PublicContentController::class, 'topic'])->name('topic.show');
 Route::get('/author/{author:slug}', [PublicContentController::class, 'author'])->name('author.show');
+Route::get('/video', [PublicContentController::class, 'videos'])->name('videos.index');
 Route::get('/video/{video:slug}', [PublicContentController::class, 'video'])->name('video.show');
 Route::get('/kuis/{quiz:slug}', [PublicContentController::class, 'quiz'])->name('quiz.show');
 Route::post('/kuis/{quiz:slug}', [PublicContentController::class, 'submitQuiz'])->middleware('throttle:10,1')->name('quiz.submit');
+Route::get('/belajar', [PublicContentController::class, 'paths'])->name('paths.index');
 Route::get('/belajar/{path:slug}', [PublicContentController::class, 'path'])->name('path.show');
+Route::get('/kelas', [PublicContentController::class, 'courses'])->name('courses.index');
 Route::get('/kelas/{course:slug}', [PublicContentController::class, 'course'])->name('course.show');
 Route::get('/kelas/{course:slug}/pelajaran/{lesson}', [ReaderController::class, 'lesson'])->name('course.lesson');
 Route::get('/sitemap.xml', [PublicContentController::class, 'sitemap'])->name('sitemap');
