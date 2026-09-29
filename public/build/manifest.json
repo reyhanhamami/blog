@@ -112,7 +112,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-DFXQDbj9.css",
+    "file": "assets/app-DhRpuyaj.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -121,7 +121,7 @@
     ]
   },
   "resources/css/public.css": {
-    "file": "assets/public-3RqC7hdZ.css",
+    "file": "assets/public-1icU32Hh.css",
     "src": "resources/css/public.css",
     "isEntry": true,
     "name": "public",
@@ -166,7 +166,7 @@
     "isEntry": true
   },
   "resources/js/public.js": {
-    "file": "assets/public-Dr8D4HDg.js",
+    "file": "assets/public-BXfRXG2G.js",
     "name": "public",
     "src": "resources/js/public.js",
     "isEntry": true,

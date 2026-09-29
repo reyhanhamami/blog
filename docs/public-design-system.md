@@ -43,6 +43,8 @@ The header and footer read menu links from the menu database and only render ext
 
 The discovery routes `/topik`, `/belajar`, `/kelas`, and `/video` use the existing topic, learning path, course, and video records. They show published content with pagination and exclude drafts and soft deleted records. Each page has its own title, description, and canonical URL.
 
+Category landing pages and `/cari` share `ContentDiscoveryService` and the `public.explore` view. Category URLs remain canonical and indexable; internal search is `noindex,follow` in production. The shared toolbar stores search, category, topic, article type, available difficulty, and sort in the query string. Its GET form works without JavaScript and uses a 400 ms debounce with Livewire navigation when available. The public article card adapts to one, two, or more results. The footer contains the single global newsletter form, followed by grouped discovery, learning, and CMS managed company links.
+
 ## Content and accessibility
 
 The article keeps its SEO head, Article and BreadcrumbList JSON-LD, server-rendered body, sources, quiz CTA, feedback, author, previous/next, Q&A, related content, and newsletter. The TOC is progressive enhancement: the article remains readable without JavaScript. YouTube frames load on interaction. Code copy buttons and syntax highlighting initialize after Livewire navigation without duplicate controls.

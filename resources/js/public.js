@@ -73,5 +73,32 @@ function initPublicPage() {
 document.addEventListener('DOMContentLoaded', initPublicPage);
 document.addEventListener('livewire:navigate', () => { const bar = document.querySelector('#nav-progress'); if (bar) bar.hidden = false; });
 document.addEventListener('livewire:navigated', () => { const bar = document.querySelector('#nav-progress'); if (bar) bar.hidden = true; initPublicPage(); });
+let discoveryTimer;
+function navigateDiscovery(form) {
+    clearTimeout(discoveryTimer);
+    const url = new URL(form.action);
+    for (const [key, value] of new FormData(form)) {
+        if (String(value).trim() !== '') url.searchParams.set(key, String(value).trim());
+    }
+    form.closest('.discovery-shell')?.querySelector('[data-discovery-loading]')?.removeAttribute('hidden');
+    form.closest('.discovery-shell')?.querySelector('.discovery-results')?.setAttribute('aria-busy', 'true');
+    if (window.Livewire?.navigate) window.Livewire.navigate(url.toString());
+    else window.location.assign(url.toString());
+}
+document.addEventListener('input', event => {
+    if (!event.target.matches('[data-discovery-form] input[name="q"]')) return;
+    clearTimeout(discoveryTimer);
+    const form = event.target.form;
+    discoveryTimer = setTimeout(() => navigateDiscovery(form), 400);
+});
+document.addEventListener('change', event => {
+    if (event.target.matches('[data-discovery-form] select')) navigateDiscovery(event.target.form);
+});
+document.addEventListener('submit', event => {
+    if (!event.target.matches('[data-discovery-form]')) return;
+    event.preventDefault();
+    navigateDiscovery(event.target);
+});
+document.addEventListener('livewire:navigate', () => clearTimeout(discoveryTimer));
 window.addEventListener('pageshow', () => document.querySelectorAll('form[data-submitting]').forEach(form => { delete form.dataset.submitting; form.removeAttribute('aria-busy'); form.querySelectorAll('button').forEach(button => { button.disabled = false; }); }));
 window.addEventListener('scroll', () => { const bar = document.querySelector('#reading-progress'); const article = document.querySelector('[data-reading-article]'); if (!bar || !article) return; const max = Math.max(1, article.offsetHeight - innerHeight); bar.style.width = `${Math.max(0, Math.min(100, ((scrollY - article.offsetTop) / max) * 100))}%`; }, { passive: true });

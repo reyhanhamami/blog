@@ -79,22 +79,4 @@
     @endif
 </section>
 
-<section class="home-newsletter" aria-labelledby="newsletter-title">
-    <div class="home-container newsletter-grid">
-        <div class="newsletter-copy">
-            <p class="public-eyebrow">TERUS DAPATKAN INSIGHT TERBARU <span aria-hidden="true"></span></p>
-            <h2 id="newsletter-title"><em>Langganan</em> newsletter<br>Besofton Insights.</h2>
-            <p>Dapatkan artikel terbaru, tips eksklusif, dan insight langsung ke email Anda. Tanpa spam, hanya yang bermanfaat.</p>
-            <svg class="newsletter-arrow" aria-hidden="true" viewBox="0 0 130 120" fill="none"><path d="M84 6C58 35 40 70 30 100c32-27 59-42 74-40-10 17-31 34-46 49M38 99 13 115l5-30" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="newsletter-actions">
-            <livewire:newsletter-form />
-            <div class="newsletter-benefits">
-                <div><span aria-hidden="true">✉</span><p>Artikel terbaru<br><strong>langsung ke inbox</strong></p></div>
-                <div><span aria-hidden="true">✦</span><p>Insight eksklusif<br><strong>untuk bisnis digital</strong></p></div>
-                <div><span aria-hidden="true">↺</span><p>Bisa berhenti<br><strong>kapan saja</strong></p></div>
-            </div>
-        </div>
-    </div>
-</section>
 @endsection

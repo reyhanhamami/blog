@@ -23,6 +23,7 @@ $socialLinks = collect([
     'Instagram' => Setting::valueFor('instagram_url'),
     'LinkedIn' => Setting::valueFor('linkedin_url'),
     'YouTube' => Setting::valueFor('youtube_url'),
+    'GitHub' => Setting::valueFor('github_url'),
 ])->filter(fn ($url) => (bool) preg_match('~^https?://~i', $url));
 @endphp
 <!doctype html>

@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Topic;
 use App\Models\Video;
 use App\Services\ArticleNavigation;
+use App\Services\ContentDiscoveryService;
 use App\Services\HomepageContentService;
 use App\Services\QuizGrader;
 use Illuminate\Http\Request;
@@ -102,22 +103,42 @@ class PublicContentController extends Controller
         return view('public.discovery', ['kind' => 'videos', 'title' => 'Video', 'description' => 'Tonton penjelasan dan tutorial dari koleksi Besofton Insights.', 'items' => $videos]);
     }
 
-    public function search(Request $request)
+    public function search(Request $request, ContentDiscoveryService $discovery)
     {
-        $term = trim((string) $request->get('q'));
-        $type = in_array($request->get('type'), ['all', 'articles', 'videos', 'courses'], true) ? $request->get('type') : 'all';
-        $posts = Post::published()->with(['category', 'author'])->when($term !== '', fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', '%'.$term.'%')->orWhere('excerpt', 'like', '%'.$term.'%')->orWhere('content_plain', 'like', '%'.$term.'%')->orWhereHas('tags', fn ($tags) => $tags->where('name', 'like', '%'.$term.'%'))->orWhereHas('topics', fn ($topics) => $topics->where('name', 'like', '%'.$term.'%'))->orWhereHas('author', fn ($authors) => $authors->where('name', 'like', '%'.$term.'%'))))->latest('published_at')->paginate(12)->withQueryString();
-        $videos = in_array($type, ['all', 'videos']) && $term !== '' ? Video::published()->where('title', 'like', '%'.$term.'%')->take(12)->get() : collect();
-        $courses = in_array($type, ['all', 'courses']) && $term !== '' ? Course::where('status', 'published')->where('title', 'like', '%'.$term.'%')->take(12)->get() : collect();
+        $data = $discovery->articles($request);
+        $term = $data['filters']['query'];
+        $requestedType = is_string($request->query('type')) ? $request->query('type') : 'all';
+        $resultType = match ($requestedType) {
+            'article', 'articles' => 'article',
+            'video', 'videos' => 'video',
+            'course', 'courses' => 'course',
+            'learning', 'paths' => 'learning',
+            default => 'all',
+        };
+        $otherContentAllowed = ! $data['filters']['category'] && ! $data['filters']['topic']
+            && $data['filters']['contentType'] === '' && $data['filters']['difficulty'] === '';
+        $searchTerm = '%'.$term.'%';
+        $videos = $otherContentAllowed && ($resultType === 'video' || ($resultType === 'all' && $term !== ''))
+            ? ($resultType === 'video'
+                ? Video::published()->when($term !== '', fn ($query) => $query->where('title', 'like', $searchTerm))->latest('published_at')->paginate(12)->withQueryString()
+                : Video::published()->where('title', 'like', $searchTerm)->latest('published_at')->take(6)->get()) : collect();
+        $courses = $otherContentAllowed && ($resultType === 'course' || ($resultType === 'all' && $term !== ''))
+            ? ($resultType === 'course'
+                ? Course::where('status', 'published')->when($term !== '', fn ($query) => $query->where('title', 'like', $searchTerm))->latest()->paginate(12)->withQueryString()
+                : Course::where('status', 'published')->where('title', 'like', $searchTerm)->latest()->take(6)->get()) : collect();
+        $paths = $otherContentAllowed && ($resultType === 'learning' || ($resultType === 'all' && $term !== ''))
+            ? ($resultType === 'learning'
+                ? LearningPath::where('status', 'published')->when($term !== '', fn ($query) => $query->where('title', 'like', $searchTerm))->latest()->paginate(12)->withQueryString()
+                : LearningPath::where('status', 'published')->where('title', 'like', $searchTerm)->latest()->take(6)->get()) : collect();
 
-        return view('public.archive', ['title' => $term ? 'Hasil pencarian: '.$term : 'Cari artikel', 'description' => '', 'posts' => $posts, 'search' => $term, 'noindex' => true, 'type' => $type, 'videos' => $videos, 'courses' => $courses]);
+        return view('public.explore', $data + compact('videos', 'courses', 'paths', 'resultType') + ['context' => 'search', 'currentCategory' => null]);
     }
 
-    public function category(Category $category)
+    public function category(Request $request, Category $category, ContentDiscoveryService $discovery)
     {
         abort_unless($category->is_active, 404);
 
-        return $this->archive($category, 'Kategori');
+        return view('public.explore', $discovery->articles($request, $category) + ['context' => 'category', 'currentCategory' => $category]);
     }
 
     public function tag(Tag $tag)
