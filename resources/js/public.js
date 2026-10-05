@@ -35,8 +35,12 @@ function initPublicPage() {
         if (headings.length) {
             toc.hidden = false; const list = toc.querySelector('ol');
             const desktopList = document.createElement('ol');
-            headings.forEach((heading, index) => {
-                heading.id ||= `bagian-${index + 1}`;
+            const usedIds = new Map();
+            headings.forEach(heading => {
+                const base = heading.textContent.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'bagian';
+                const count = (usedIds.get(base) || 0) + 1;
+                usedIds.set(base, count);
+                heading.id = count === 1 ? base : `${base}-${count}`;
                 const item = document.createElement('li'); if (heading.tagName === 'H3') item.className = 'toc-subitem';
                 const link = document.createElement('a'); link.href = `#${heading.id}`; link.textContent = heading.textContent;
                 item.append(link); list.append(item);

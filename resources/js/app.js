@@ -184,62 +184,17 @@ async function initPage() {
         }
         toc.dataset.built = '1';
     }
-    Prism.highlightAllUnder(document.querySelector('main') || document);
+    if (!document.querySelector('[data-article-editor]')) Prism.highlightAllUnder(document.querySelector('main') || document);
 }
 document.addEventListener('livewire:navigate', () => document.querySelector('#nav-progress')?.classList.remove('hidden'));
-document.addEventListener('livewire:navigating', () => { initGeneration++; selects.forEach(select => select.destroy()); selects.clear(); calendar?.destroy(); calendar = null; currentEditor = null; });
+document.addEventListener('livewire:navigating', () => { initGeneration++; selects.forEach(select => select.destroy()); selects.clear(); calendar?.destroy(); calendar = null; currentEditor?.destroy(); currentEditor = null; });
 document.addEventListener('livewire:navigated', () => { document.querySelector('#nav-progress')?.classList.add('hidden'); initPage(); });
 document.addEventListener('DOMContentLoaded', initPage);
-function initEditor() {
+async function initEditor() {
     const editor = document.querySelector('[data-article-editor]');
-    const form = document.querySelector('[data-post-form]');
-    const source = document.querySelector('#content');
-    if (!editor || !form || !source || editor.dataset.bound) return;
-    editor.dataset.bound = '1';
-    const status = document.querySelector('[data-save-status]');
-    const key = `besofton-draft:${location.pathname}`;
-    let dirty = false;
-    let timer;
-    const escaped = value => value.replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-    const sync = () => { source.value = editor.innerHTML; };
-    const saveLocal = () => { sync(); localStorage.setItem(key, source.value); if (status) status.textContent = 'Draf lokal tersimpan. Tekan Simpan untuk menyimpan ke CMS.'; };
-    editor.addEventListener('input', () => { dirty = true; sync(); if (status) status.textContent = 'Perubahan belum tersimpan'; clearTimeout(timer); timer = setTimeout(saveLocal, 1200); });
-    document.querySelectorAll('[data-editor-command]').forEach(button => button.addEventListener('click', () => {
-        editor.focus();
-        const action = button.dataset.editorCommand;
-        if (action === 'h2' || action === 'h3') document.execCommand('formatBlock', false, action);
-        else if (action === 'bold' || action === 'italic') document.execCommand(action);
-        else if (action === 'unordered') document.execCommand('insertUnorderedList');
-        else if (action === 'ordered') document.execCommand('insertOrderedList');
-        else if (action === 'quote') document.execCommand('formatBlock', false, 'blockquote');
-        else if (action === 'hr') document.execCommand('insertHorizontalRule');
-        else if (action === 'link' || action === 'image') {
-            const url = prompt(action === 'link' ? 'URL tautan (https://)' : 'URL gambar (https://)');
-            if (url && /^https?:\/\//i.test(url)) {
-                if (action === 'link') document.execCommand('createLink', false, url);
-                else document.execCommand('insertImage', false, url);
-            }
-        } else if (action === 'youtube') {
-            const url = prompt('Tempel URL video YouTube');
-            const id = url?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/)?.[1];
-            if (id) document.execCommand('insertHTML', false, `<p>[youtube:${id}]</p>`);
-            else if (url) Swal.fire({icon:'error', title:'URL YouTube tidak valid'});
-        } else if (action === 'code') {
-            const language = (prompt('Bahasa kode (php, javascript, sql, dll.)', 'php') || 'text').toLowerCase().replace(/[^a-z0-9+#-]/g, '');
-            const code = prompt('Tempel kode');
-            if (code) document.execCommand('insertHTML', false, `<pre><code class="language-${language}">${escaped(code)}</code></pre><p><br></p>`);
-        }
-        editor.dispatchEvent(new Event('input'));
-    }));
-    const local = localStorage.getItem(key);
-    if (local && local !== editor.innerHTML && local !== source.value) {
-        Swal.fire({title:'Pulihkan draf lokal?', text:'Ada perubahan yang belum disimpan di browser ini.', showCancelButton:true, confirmButtonText:'Pulihkan', cancelButtonText:'Abaikan'}).then(result => {
-            if (result.isConfirmed) { editor.innerHTML = local; editor.dispatchEvent(new Event('input')); }
-            else localStorage.removeItem(key);
-        });
-    }
-    form.addEventListener('submit', () => { sync(); dirty = false; localStorage.removeItem(key); });
-    currentEditor = { get dirty() { return dirty; }, clear() { dirty = false; } };
+    if (!editor || editor.closest('[data-article-editor-field]')?.dataset.bound) return;
+    const { initArticleEditor } = await import('./article-editor.js');
+    if (editor.isConnected) currentEditor = initArticleEditor() || currentEditor;
 }
 window.addEventListener('beforeunload', event => { if (currentEditor?.dirty) { event.preventDefault(); event.returnValue = ''; } });
 document.addEventListener('livewire:navigate', event => {

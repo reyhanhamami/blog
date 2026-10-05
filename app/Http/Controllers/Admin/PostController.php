@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\Category;
+use App\Models\Media;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Quiz;
@@ -201,7 +202,7 @@ class PostController extends Controller
     {
         $post->loadMissing(['tags', 'topics', 'relatedPosts']);
 
-        return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title']), 'quizOptions' => Quiz::where('status', 'published')->when($post->quiz_id, fn ($q) => $q->orWhere('id', $post->quiz_id))->orderBy('title')->get(['id', 'title'])];
+        return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title']), 'quizOptions' => Quiz::where('status', 'published')->when($post->quiz_id, fn ($q) => $q->orWhere('id', $post->quiz_id))->orderBy('title')->get(['id', 'title']), 'mediaOptions' => auth()->user()->can('media.view') ? Media::latest()->limit(80)->get() : collect()];
     }
 
     private function validated(Request $request, ?Post $post = null): array

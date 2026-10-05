@@ -39,7 +39,11 @@ class MediaController extends Controller
         $file->move(public_path($folder), $filename);
         $path = $folder.'/'.$filename;
         $dimensions = @getimagesize(public_path($path));
-        Media::create(['path' => $path, 'mime_type' => mime_content_type(public_path($path)), 'size' => filesize(public_path($path)), 'width' => $dimensions[0] ?? null, 'height' => $dimensions[1] ?? null, 'alt_text' => $data['alt_text'], 'caption' => $data['caption'] ?? null, 'uploaded_by' => $request->user()->id]);
+        $media = Media::create(['path' => $path, 'mime_type' => mime_content_type(public_path($path)), 'size' => filesize(public_path($path)), 'width' => $dimensions[0] ?? null, 'height' => $dimensions[1] ?? null, 'alt_text' => $data['alt_text'], 'caption' => $data['caption'] ?? null, 'uploaded_by' => $request->user()->id]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['url' => $media->url, 'alt' => $media->alt_text, 'caption' => $media->caption, 'width' => $media->width, 'height' => $media->height], 201);
+        }
 
         return back()->with('success', 'Gambar berhasil diunggah.');
     }

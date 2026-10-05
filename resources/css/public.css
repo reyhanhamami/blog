@@ -390,6 +390,13 @@ a.public-card:hover, .public-card:hover { border-color: #ba8736; transform: tran
 .prose-besofton h2 { margin: 56px 0 22px; font-size: clamp(30px, 3vw, 40px); font-weight: 800; }
 .prose-besofton h3 { margin: 38px 0 18px; font-size: clamp(24px, 2.5vw, 30px); font-weight: 700; }
 .prose-besofton h4 { margin: 30px 0 14px; font-size: 22px; font-weight: 700; }
+.prose-besofton h1 { margin: 56px 0 22px; font-size: clamp(32px, 3.4vw, 44px); line-height: 1.12; }
+.prose-besofton h5 { margin: 26px 0 12px; font-size: 19px; }.prose-besofton h6 { margin: 22px 0 10px; font-size: 17px; }
+.prose-besofton .article-align-left { text-align: left; }.prose-besofton .article-align-center { text-align: center; }.prose-besofton .article-align-right { text-align: right; }.prose-besofton .article-align-justify { text-align: justify; }
+.prose-besofton .article-image { max-width: 100%; margin-top: 30px; margin-bottom: 30px; }
+.prose-besofton .article-image--small { width: min(100%, 320px); }.prose-besofton .article-image--medium { width: min(100%, 560px); }.prose-besofton .article-image--large { width: min(100%, 760px); }.prose-besofton .article-image--full { width: 100%; }
+.prose-besofton .article-image img { width: 100%; height: auto; margin: 0; object-fit: contain; }
+.prose-besofton .article-image--left { margin-left: 0; margin-right: auto; }.prose-besofton .article-image--center { margin-left: auto; margin-right: auto; }.prose-besofton .article-image--right { margin-left: auto; margin-right: 0; }
 .prose-besofton ul, .prose-besofton ol { padding-left: 1.4em; }
 .prose-besofton li { margin-bottom: 8px; }
 .prose-besofton a, .article-references a { text-decoration: underline; text-decoration-color: #a56f1a; text-underline-offset: 4px; }
