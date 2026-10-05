@@ -72,8 +72,24 @@ class CatalogController extends Controller
         $this->authorize($request);
         $config = $this->config($request);
         $module = $request->route('module');
+        if ($request->expectsJson() && in_array($module, ['categories', 'tags', 'topics'], true)) {
+            $name = trim((string) $request->input('name'));
+            if ($name !== '') {
+                $existing = $config['model']::query()->whereRaw('LOWER(name) = ?', [Str::lower($name)])->first();
+                if ($existing) {
+                    return response()->json(['message' => $config['label'].' sudah tersedia.', 'existing' => ['id' => $existing->id, 'name' => $existing->name]], 409);
+                }
+            }
+            if ($module === 'categories' && ! $request->has('is_active')) {
+                $request->merge(['is_active' => '1']);
+            }
+        }
         $item = new $config['model'];
         $this->save($request, $item, $config, $module);
+
+        if ($request->expectsJson() && in_array($module, ['categories', 'tags', 'topics'], true)) {
+            return response()->json(['id' => $item->id, 'name' => $item->name, 'slug' => $item->slug], 201);
+        }
 
         return redirect()->route('admin.'.$module.'.index')->with('success', $config['label'].' berhasil dibuat.');
     }

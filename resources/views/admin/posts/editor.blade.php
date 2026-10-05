@@ -86,11 +86,9 @@
 
     <dialog class="editor-dialog editor-image-dialog" data-editor-dialog="image" aria-label="Sisipkan gambar">
         <h3>Gambar artikel</h3>
-        <div class="editor-dialog-tabs"><button type="button" data-editor-image-tab="upload" aria-pressed="true">Upload baru</button><button type="button" data-editor-image-tab="library" aria-pressed="false">Media Library</button></div>
+        <div class="editor-dialog-tabs"><button type="button" data-editor-image-tab="upload" aria-pressed="true">Upload baru</button>@can('media.view')<button type="button" data-editor-image-tab="library" aria-pressed="false">Media Library</button>@endcan</div>
         <div data-editor-image-upload-pane>@can('media.upload')<label>File gambar<input class="form-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-editor-image-file></label>@else<p>Anda tidak memiliki izin upload media.</p>@endcan</div>
-        <div class="editor-media-grid" data-editor-image-library-pane hidden>
-            @forelse($mediaOptions as $item)<button type="button" data-editor-media-url="{{ $item->url }}" data-editor-media-alt="{{ $item->alt_text }}" data-editor-media-caption="{{ $item->caption }}" data-editor-media-width="{{ $item->width }}" data-editor-media-height="{{ $item->height }}" title="Pilih {{ $item->alt_text }}"><img src="{{ $item->url }}" alt="" loading="lazy"><span>{{ $item->alt_text }}</span></button>@empty<p>Belum ada gambar di Media Library.</p>@endforelse
-        </div>
+        <div data-editor-image-library-pane hidden>@include('admin.posts.media-library')</div>
         <div class="editor-image-preview"><img data-editor-image-preview alt="Pratinjau gambar" hidden></div>
         <label>Alt text<input class="form-input" data-editor-image-alt maxlength="191" placeholder="Jelaskan isi gambar"></label>
         <p class="text-xs text-amber-700" data-editor-alt-warning hidden>Alt text membantu aksesibilitas dan pemahaman mesin pencari.</p>

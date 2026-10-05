@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\Category;
-use App\Models\Media;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Quiz;
@@ -202,7 +201,7 @@ class PostController extends Controller
     {
         $post->loadMissing(['tags', 'topics', 'relatedPosts']);
 
-        return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title']), 'quizOptions' => Quiz::where('status', 'published')->when($post->quiz_id, fn ($q) => $q->orWhere('id', $post->quiz_id))->orderBy('title')->get(['id', 'title']), 'mediaOptions' => auth()->user()->can('media.view') ? Media::latest()->limit(80)->get() : collect()];
+        return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title']), 'quizOptions' => Quiz::where('status', 'published')->when($post->quiz_id, fn ($q) => $q->orWhere('id', $post->quiz_id))->orderBy('title')->get(['id', 'title'])];
     }
 
     private function validated(Request $request, ?Post $post = null): array
@@ -220,13 +219,13 @@ class PostController extends Controller
             'difficulty' => ['nullable', Rule::in(['beginner', 'intermediate', 'advanced'])],
             'status' => ['required', Rule::in($statuses)],
             'scheduled_at' => ['nullable', 'date', 'required_if:status,scheduled'],
-            'featured_image' => ['nullable', 'url', 'max:2048'],
+            'featured_image' => ['nullable', 'url:http,https', 'max:2048'],
             'featured_image_alt' => ['nullable', 'string', 'max:191'],
             'seo_title' => ['nullable', 'string', 'max:191'],
             'seo_description' => ['nullable', 'string', 'max:300'],
             'og_title' => ['nullable', 'string', 'max:191'],
             'og_description' => ['nullable', 'string', 'max:300'],
-            'og_image' => ['nullable', 'url', 'max:2048'],
+            'og_image' => ['nullable', 'url:http,https', 'max:2048'],
             'direct_answer' => ['nullable', 'string', 'max:2000'],
             'key_takeaways' => ['nullable', 'string', 'max:5000'],
             'summary' => ['nullable', 'string', 'max:5000'],

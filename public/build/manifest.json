@@ -8,6 +8,10 @@
     "name": "index",
     "isDynamicEntry": true
   },
+  "_media-library-CHQF3qOt.js": {
+    "file": "assets/media-library-CHQF3qOt.js",
+    "name": "media-library"
+  },
   "_preload-helper-I4rgV-VL.js": {
     "file": "assets/preload-helper-I4rgV-VL.js",
     "name": "preload-helper"
@@ -112,7 +116,7 @@
     "isDynamicEntry": true
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-Dc-E1oWn.css",
+    "file": "assets/admin-DfUEAfxZ.css",
     "src": "resources/css/admin.css",
     "isEntry": true,
     "name": "admin",
@@ -130,7 +134,7 @@
     ]
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-C_iMgbKW.js",
+    "file": "assets/admin-BTK-YG8-.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
@@ -155,21 +159,32 @@
       "node_modules/.pnpm/sweetalert2@11.26.25/node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
       "node_modules/.pnpm/tom-select@2.6.2/node_modules/tom-select/dist/esm/tom-select.complete.js",
       "node_modules/.pnpm/sweetalert2@11.26.25/node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
+      "resources/js/article-form.js",
       "_index-DlfFiluo.js",
       "node_modules/.pnpm/@fullcalendar+daygrid@6.1.20_@fullcalendar+core@6.1.20/node_modules/@fullcalendar/daygrid/index.js",
       "resources/js/article-editor.js"
     ]
   },
   "resources/js/article-editor.js": {
-    "file": "assets/article-editor-BcxWa-SP.js",
+    "file": "assets/article-editor-BLkaq8m5.js",
     "name": "article-editor",
     "src": "resources/js/article-editor.js",
     "isDynamicEntry": true,
     "imports": [
-      "_preload-helper-I4rgV-VL.js"
+      "_preload-helper-I4rgV-VL.js",
+      "_media-library-CHQF3qOt.js"
     ],
     "dynamicImports": [
       "node_modules/.pnpm/sweetalert2@11.26.25/node_modules/sweetalert2/dist/sweetalert2.esm.all.js"
+    ]
+  },
+  "resources/js/article-form.js": {
+    "file": "assets/article-form-CCOIghsX.js",
+    "name": "article-form",
+    "src": "resources/js/article-form.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_media-library-CHQF3qOt.js"
     ]
   },
   "resources/js/public-home.js": {

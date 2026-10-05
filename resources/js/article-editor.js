@@ -1,3 +1,5 @@
+import { initMediaGallery, uploadMedia } from './media-library';
+
 const ALLOWED_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'U', 'S', 'DEL', 'BLOCKQUOTE', 'PRE', 'CODE', 'A', 'IMG', 'FIGURE', 'FIGCAPTION', 'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD', 'BR', 'HR']);
 const DISCARD_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'FORM', 'INPUT', 'BUTTON', 'SVG', 'MATH', 'TEMPLATE', 'NOSCRIPT']);
 const SIZE_VALUES = ['small', 'medium', 'large', 'full'];
@@ -91,6 +93,14 @@ export function initArticleEditor() {
     let selectedLink;
     let selectedYoutube;
     let chosenMedia;
+    const mediaGallery = initMediaGallery(get('[data-editor-image-library-pane] [data-media-gallery]'), item => {
+        chosenMedia = item;
+        if (get('[data-editor-image-file]')) get('[data-editor-image-file]').value = '';
+        get('[data-editor-image-alt]').value = item.alt || '';
+        get('[data-editor-alt-warning]').hidden = !!get('[data-editor-image-alt]').value.trim();
+        get('[data-editor-image-caption]').value = item.caption || '';
+        showImagePreview(item.url);
+    });
     let editFigure = false;
     let history = [editor.innerHTML];
     let historyIndex = 0;
@@ -268,6 +278,7 @@ export function initArticleEditor() {
         get('[data-editor-image-upload-pane]').hidden = tab !== 'upload';
         get('[data-editor-image-library-pane]').hidden = tab !== 'library';
         if (tab === 'library' && get('[data-editor-image-file]')) get('[data-editor-image-file]').value = '';
+        if (tab === 'library') mediaGallery.load();
         for (const button of field.querySelectorAll('[data-editor-image-tab]')) button.setAttribute('aria-pressed', String(button.dataset.editorImageTab === tab));
     }
 
@@ -297,10 +308,8 @@ export function initArticleEditor() {
         };
         if (file) {
             if (!alt) { error.textContent = 'Isi alt text sebelum mengunggah gambar.'; error.hidden = false; return; }
-            const data = new FormData(); data.append('file', file); data.append('alt_text', alt); data.append('caption', caption);
             const button = get('[data-editor-image-insert]'); button.disabled = true; button.textContent = 'Mengunggah...';
-            fetch(field.dataset.mediaUploadUrl, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' }, body: data })
-                .then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.errors?.file?.[0] || result.message || 'Upload gagal.'); return result; })
+            uploadMedia(field.dataset.mediaUploadUrl, file, alt, caption)
                 .then(finish)
                 .catch(exception => { error.textContent = exception.message; error.hidden = false; })
                 .finally(() => { button.disabled = false; button.textContent = 'Sisipkan gambar'; });
@@ -442,8 +451,6 @@ export function initArticleEditor() {
     listen(field, 'click', event => {
         if (event.target.closest('[data-editor-close]')) event.target.closest('dialog').close();
         const tab = event.target.closest('[data-editor-image-tab]'); if (tab) imageTab(tab.dataset.editorImageTab);
-        const item = event.target.closest('[data-editor-media-url]');
-        if (item) { chosenMedia = { url: item.dataset.editorMediaUrl, width: item.dataset.editorMediaWidth, height: item.dataset.editorMediaHeight }; if (get('[data-editor-image-file]')) get('[data-editor-image-file]').value = ''; get('[data-editor-image-alt]').value = item.dataset.editorMediaAlt || ''; get('[data-editor-alt-warning]').hidden = !!get('[data-editor-image-alt]').value.trim(); get('[data-editor-image-caption]').value = item.dataset.editorMediaCaption || ''; showImagePreview(chosenMedia.url); }
         if (event.target.closest('[data-editor-image-insert]')) applyImage();
         if (event.target.closest('[data-editor-image-edit]')) openDialog('image');
         if (event.target.closest('[data-editor-image-delete]') && selectedFigure) { selectedFigure.remove(); get('[data-editor-image-context]').hidden = true; change(); }
@@ -483,6 +490,6 @@ export function initArticleEditor() {
     return {
         get dirty() { return dirty; },
         clear() { dirty = false; },
-        destroy() { abort.abort(); clearTimeout(timer); clearTimeout(statsTimer); if (previewUrl) URL.revokeObjectURL(previewUrl); editor.querySelectorAll('[data-editor-transient]').forEach(node => node.remove()); delete field.dataset.bound; },
+        destroy() { abort.abort(); mediaGallery.destroy(); clearTimeout(timer); clearTimeout(statsTimer); if (previewUrl) URL.revokeObjectURL(previewUrl); editor.querySelectorAll('[data-editor-transient]').forEach(node => node.remove()); delete field.dataset.bound; },
     };
 }

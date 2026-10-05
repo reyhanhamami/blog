@@ -16,7 +16,24 @@ class MediaController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('manage-content');
-        $media = Media::query()->when($request->filled('q'), fn ($q) => $q->where('alt_text', 'like', '%'.$request->q.'%')->orWhere('caption', 'like', '%'.$request->q.'%'))->latest()->paginate(24)->withQueryString();
+        $media = Media::query()
+            ->when($request->expectsJson(), fn ($query) => $query->whereIn('mime_type', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']))
+            ->when($request->filled('q'), fn ($query) => $query->where(fn ($match) => $match
+                ->where('alt_text', 'like', '%'.$request->q.'%')
+                ->orWhere('caption', 'like', '%'.$request->q.'%')
+                ->orWhere('path', 'like', '%'.$request->q.'%')))
+            ->latest()->paginate(24)->withQueryString();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'items' => $media->getCollection()->map(fn (Media $item) => [
+                    'id' => $item->id, 'url' => $item->url, 'alt' => $item->alt_text,
+                    'caption' => $item->caption, 'width' => $item->width, 'height' => $item->height,
+                ]),
+                'current_page' => $media->currentPage(),
+                'last_page' => $media->lastPage(),
+            ]);
+        }
 
         return view('admin.media.index', compact('media'));
     }

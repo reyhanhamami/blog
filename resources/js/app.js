@@ -67,6 +67,7 @@ document.addEventListener('submit', async event => {
 const selects = new Set();
 let calendar = null;
 let currentEditor = null;
+let currentArticleForm = null;
 async function initPage() {
     const generation = ++initGeneration;
     if (document.body?.dataset.cms === '1') {
@@ -91,6 +92,11 @@ async function initPage() {
         if (element.tomselect) return;
         selects.add(new TomSelect(element, { plugins: element.multiple ? ['remove_button'] : ['clear_button'], create: false, allowEmptyOption: true }));
     });
+    if (document.querySelector('[data-post-form]') && !currentArticleForm) {
+        const { initArticleForm } = await import('./article-form.js');
+        if (generation !== initGeneration) return;
+        currentArticleForm = initArticleForm();
+    }
     const source = document.querySelector('[data-slug-source]');
     const target = document.querySelector('[data-slug-target]');
     if (source && target && !source.dataset.bound) {
@@ -187,7 +193,7 @@ async function initPage() {
     if (!document.querySelector('[data-article-editor]')) Prism.highlightAllUnder(document.querySelector('main') || document);
 }
 document.addEventListener('livewire:navigate', () => document.querySelector('#nav-progress')?.classList.remove('hidden'));
-document.addEventListener('livewire:navigating', () => { initGeneration++; selects.forEach(select => select.destroy()); selects.clear(); calendar?.destroy(); calendar = null; currentEditor?.destroy(); currentEditor = null; });
+document.addEventListener('livewire:navigating', () => { initGeneration++; selects.forEach(select => select.destroy()); selects.clear(); calendar?.destroy(); calendar = null; currentEditor?.destroy(); currentEditor = null; currentArticleForm?.destroy(); currentArticleForm = null; });
 document.addEventListener('livewire:navigated', () => { document.querySelector('#nav-progress')?.classList.add('hidden'); initPage(); });
 document.addEventListener('DOMContentLoaded', initPage);
 async function initEditor() {
