@@ -8,10 +8,6 @@
     "name": "index",
     "isDynamicEntry": true
   },
-  "_media-library-CHQF3qOt.js": {
-    "file": "assets/media-library-CHQF3qOt.js",
-    "name": "media-library"
-  },
   "_preload-helper-I4rgV-VL.js": {
     "file": "assets/preload-helper-I4rgV-VL.js",
     "name": "preload-helper"
@@ -134,7 +130,7 @@
     ]
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-BTK-YG8-.js",
+    "file": "assets/admin-DdwFCIPc.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
@@ -166,25 +162,50 @@
     ]
   },
   "resources/js/article-editor.js": {
-    "file": "assets/article-editor-BLkaq8m5.js",
+    "file": "assets/article-editor-BJC-6kJW.js",
     "name": "article-editor",
     "src": "resources/js/article-editor.js",
     "isDynamicEntry": true,
     "imports": [
       "_preload-helper-I4rgV-VL.js",
-      "_media-library-CHQF3qOt.js"
+      "resources/js/admin.js",
+      "_prism-BkdiT68X.js",
+      "__commonjsHelpers-Cpj98o6Y.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-markup.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-css.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-javascript.js",
+      "_prism-typescript-Ic6-Iglv.js",
+      "_prism-php-DY6lera-.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-bash.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-json.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-sql.js",
+      "_prism-python-DbL6SvP3.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-go.js"
     ],
     "dynamicImports": [
       "node_modules/.pnpm/sweetalert2@11.26.25/node_modules/sweetalert2/dist/sweetalert2.esm.all.js"
     ]
   },
   "resources/js/article-form.js": {
-    "file": "assets/article-form-CCOIghsX.js",
+    "file": "assets/article-form-CbIWNK8x.js",
     "name": "article-form",
     "src": "resources/js/article-form.js",
     "isDynamicEntry": true,
     "imports": [
-      "_media-library-CHQF3qOt.js"
+      "resources/js/admin.js",
+      "_preload-helper-I4rgV-VL.js",
+      "_prism-BkdiT68X.js",
+      "__commonjsHelpers-Cpj98o6Y.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-markup.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-css.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-javascript.js",
+      "_prism-typescript-Ic6-Iglv.js",
+      "_prism-php-DY6lera-.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-bash.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-json.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-sql.js",
+      "_prism-python-DbL6SvP3.js",
+      "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-go.js"
     ]
   },
   "resources/js/public-home.js": {

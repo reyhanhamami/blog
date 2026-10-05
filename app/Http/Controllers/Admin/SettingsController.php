@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Support\Branding;
+use App\Support\HomeHeroSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -25,10 +26,11 @@ class SettingsController extends Controller
             $values[$key] = Setting::valueFor($key, $key === 'site_name' ? 'Besofton Insights' : '');
         }
 
+        $heroValues = HomeHeroSettings::rawValues();
         $logoUrl = Branding::logoUrl();
         $faviconUrl = Branding::faviconUrl();
 
-        return view('admin.settings', compact('values', 'logoUrl', 'faviconUrl'));
+        return view('admin.settings', compact('values', 'logoUrl', 'faviconUrl', 'heroValues'));
     }
 
     public function update(Request $request)
@@ -40,7 +42,28 @@ class SettingsController extends Controller
             'default_description' => ['nullable', 'string', 'max:300'], 'google_verification' => ['nullable', 'string', 'max:191'],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:4096', 'dimensions:min_width=100,max_width=4000,max_height=4000'],
             'favicon' => ['nullable', 'file', 'max:1024'],
+            'home_hero_eyebrow' => ['sometimes', 'required', 'string', 'max:100'],
+            'home_hero_heading_line_1' => ['sometimes', 'required', 'string', 'max:100'],
+            'home_hero_heading_line_2' => ['sometimes', 'required', 'string', 'max:100'],
+            'home_hero_heading_highlight' => ['sometimes', 'required', 'string', 'max:100'],
+            'home_hero_description' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'home_hero_image' => ['sometimes', 'nullable', 'url:http,https', 'max:2048'],
+            'home_hero_image_alt' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'home_hero_gold_note' => ['sometimes', 'nullable', 'string', 'max:150'],
+            'home_hero_black_label' => ['sometimes', 'nullable', 'string', 'max:150'],
+            'home_hero_white_notes' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'home_hero_search_placeholder' => ['sometimes', 'required', 'string', 'max:120'],
         ]);
+        if (array_key_exists('home_hero_white_notes', $data)) {
+            $notes = HomeHeroSettings::lines($data['home_hero_white_notes'] ?? '');
+            if (count($notes) > 4 || collect($notes)->contains(fn ($note) => mb_strlen($note) > 100)) {
+                throw ValidationException::withMessages(['home_hero_white_notes' => 'Isi maksimal empat catatan, masing-masing paling panjang 100 karakter.']);
+            }
+            $data['home_hero_white_notes'] = implode("\n", $notes);
+        }
+        if (array_key_exists('home_hero_black_label', $data)) {
+            $data['home_hero_black_label'] = implode("\n", HomeHeroSettings::lines($data['home_hero_black_label'] ?? ''));
+        }
         foreach (['logo', 'favicon'] as $kind) {
             if (isset($data[$kind])) {
                 $this->validateImage($data[$kind], $kind);
@@ -68,6 +91,11 @@ class SettingsController extends Controller
                 foreach ($newPaths as $kind => $path) {
                     Setting::putValue($kind.'_path', $path);
                 }
+                foreach (array_keys(HomeHeroSettings::DEFAULTS) as $key) {
+                    if (array_key_exists($key, $data)) {
+                        Setting::putValue($key, $data[$key] ?? '');
+                    }
+                }
             });
         } catch (\Throwable $exception) {
             foreach ($newPaths as $path) {
@@ -79,7 +107,9 @@ class SettingsController extends Controller
             Branding::deleteOldUpload($path);
         }
 
-        return back()->with('success', 'Pengaturan disimpan.');
+        $updatedHomepage = count(array_intersect(array_keys(HomeHeroSettings::DEFAULTS), array_keys($data))) > 0;
+
+        return back()->with('success', $updatedHomepage ? 'Pengaturan homepage berhasil diperbarui.' : 'Pengaturan disimpan.');
     }
 
     private function validateImage(UploadedFile $file, string $kind): void
