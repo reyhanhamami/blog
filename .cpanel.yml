@@ -2,7 +2,7 @@
 deployment:
   tasks:
     - export APPPATH=/home/zfoeasqc/public_html/blog
-    - /opt/cpanel/ea-php84/root/usr/bin/php $APPPATH/artisan migrate --force
+    - /opt/cpanel/ea-php84/root/usr/bin/php $APPPATH/artisan migrate --force --seed
     - /opt/cpanel/ea-php84/root/usr/bin/php $APPPATH/artisan optimize:clear
     - /opt/cpanel/ea-php84/root/usr/bin/php $APPPATH/artisan config:cache
     - /opt/cpanel/ea-php84/root/usr/bin/php $APPPATH/artisan view:cache
