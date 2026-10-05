@@ -35,10 +35,10 @@ class EnsureAdminPermission
 
         if (str_starts_with($action, 'posts.')) {
             $part = substr($action, 6);
-            if (in_array($part, ['index', 'preview', 'revisions', 'sources.index', 'bulk'], true)) {
+            if (in_array($part, ['index', 'legacy-index', 'preview', 'revisions', 'sources.index', 'bulk'], true)) {
                 return ['articles.view'];
             }
-            if (in_array($part, ['create', 'store', 'duplicate'], true)) {
+            if (in_array($part, ['create', 'legacy-create', 'store', 'duplicate'], true)) {
                 return ['articles.create'];
             }
             if ($part === 'destroy') {

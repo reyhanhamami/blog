@@ -24,6 +24,8 @@
 .public-brand { display: inline-flex; align-items: center; gap: 10px; width: 215px; height: 48px; }
 .public-brand-mark { position: relative; display: block; width: 34px; height: 34px; flex: none; overflow: hidden; border-radius: 8px; background: #090909; }
 .public-brand-mark img { position: absolute; display: block; width: 100px; height: 100px; max-width: none; left: -33px; top: -13px; }
+.public-brand-mark-custom { background: transparent; }
+.public-brand-mark-custom img { position: static; width: 100%; height: 100%; max-width: 100%; object-fit: contain; }
 .public-brand-text { display: flex; flex-direction: column; gap: 1px; white-space: nowrap; }
 .public-brand-text strong { font-size: 13px; line-height: 1; font-weight: 800; letter-spacing: -.04em; }
 .public-brand-text small { font-size: 6px; font-weight: 600; letter-spacing: .22em; }

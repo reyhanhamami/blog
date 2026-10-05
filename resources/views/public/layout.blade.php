@@ -2,10 +2,10 @@
 use App\Models\Menu;
 use App\Models\Page;
 use App\Models\Setting;
-use Illuminate\Support\Facades\Storage;
 
 $siteName = Setting::valueFor('site_name', 'Besofton Insights');
-$logoUrl = Storage::disk('public')->url('logo.png');
+$logoUrl = \App\Support\Branding::logoUrl();
+$customLogo = (bool) (\App\Support\Branding::uploadedPath('logo_path') || Setting::valueFor('logo_url'));
 $headerLinks = Menu::links('header')->filter(fn ($link) => $link->parent_id === null && $link->url !== '/cari')->values();
 if ($headerLinks->isEmpty()) {
     $headerLinks = \App\Support\PublicNavigation::fallback();
@@ -35,16 +35,14 @@ $socialLinks = collect([
     <meta name="description" content="@yield('seo_description', Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
     <meta name="robots" content="{{ config('app.env') === 'production' ? trim($__env->yieldContent('robots', 'index,follow')) : 'noindex,nofollow' }}">
     <link rel="canonical" href="@yield('canonical', url()->current())">
-    <link rel="icon" href="{{ Setting::valueFor('favicon_url', asset('favicon.svg')) }}">
+    <link rel="icon" href="{{ \App\Support\Branding::faviconUrl() }}">
     @if(Setting::valueFor('google_verification'))<meta name="google-site-verification" content="{{ Setting::valueFor('google_verification') }}">@endif
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:title" content="@yield('og_title', $siteName)">
     <meta property="og:description" content="@yield('og_description', Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
     <meta property="og:url" content="@yield('canonical', url()->current())">
     @if(trim($__env->yieldContent('og_image')) !== '')<meta property="og:image" content="@yield('og_image')"><meta name="twitter:card" content="summary_large_image">@endif
-    @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/public.css', 'resources/js/public.js'])
-    @endif
+    @vite(['resources/css/public.css', 'resources/js/public.js'])
     @php $siteSchema = ['@context' => 'https://schema.org', '@graph' => [['@type' => 'Organization', 'name' => $siteName, 'url' => route('home')], ['@type' => 'WebSite', 'name' => $siteName, 'url' => route('home')]]]; @endphp
     <script type="application/ld+json">{!! json_encode($siteSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
     @livewireStyles

@@ -8,6 +8,7 @@ use App\Policies\PostPolicy;
 use App\Support\PermissionCatalog;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            Vite::useHotFile(storage_path('framework/vite-production-disabled.hot'));
+        }
         Schema::defaultStringLength(191);
         Gate::policy(Post::class, PostPolicy::class);
         Gate::before(fn (User $user) => $user->role === 'superadmin' ? true : null);

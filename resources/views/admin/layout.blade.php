@@ -2,16 +2,16 @@
 <html lang="id">
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset('favicon.svg') }}"><title>@yield('title', 'CMS') · Besofton Insights CMS</title>
-    @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))) @vite(['resources/css/app.css','resources/js/app.js']) @endif
+    <link rel="icon" href="{{ \App\Support\Branding::faviconUrl() }}"><title>@yield('title', 'CMS') · Besofton Insights CMS</title>
+    @vite(['resources/css/admin.css','resources/js/admin.js'])
     @livewireStyles
 </head>
-<body data-cms="1" class="bg-slate-50 text-slate-900">
+<body data-cms="1" class="admin-app bg-slate-50 text-slate-900">
 @php
     $sidebarGroups = collect(config('cms_navigation'))->map(fn ($items) => collect($items)->filter(fn ($item) => auth()->user()->canAny($item['permissions']))->values())->filter(fn ($items) => $items->isNotEmpty());
 @endphp
 <div id="nav-progress" class="fixed left-0 top-0 z-50 hidden h-1 w-full animate-pulse bg-indigo-600"></div>
-<div class="min-h-screen lg:flex" x-data="{ sidebarOpen: false, profileOpen: false }" @keydown.escape.window="sidebarOpen = false; profileOpen = false">
+<div class="admin-shell min-h-screen lg:flex" x-data="{ sidebarOpen: false, profileOpen: false }" @keydown.escape.window="sidebarOpen = false; profileOpen = false">
     <aside class="w-full shrink-0 border-b border-slate-800 bg-slate-950 text-white lg:min-h-screen lg:w-64 lg:border-b-0">
         <div class="flex items-center justify-between p-5 lg:block">
             <div><a href="{{ route('admin.dashboard') }}" wire:navigate class="text-xl font-bold tracking-tight">Besofton <span class="text-indigo-300">Insights</span></a><p class="mt-1 text-xs text-slate-400">Content Management System</p></div>
@@ -31,7 +31,7 @@
             @endforeach
         </nav>
     </aside>
-    <div class="min-w-0 flex-1">
+    <div class="admin-main min-w-0 flex-1">
         <header class="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
             <div class="text-sm text-slate-500">Besofton Insights CMS</div>
             <div class="relative" @click.outside="profileOpen = false">
@@ -42,8 +42,8 @@
                 </button>
                 <div id="cms-user-menu" x-show="profileOpen" x-cloak class="absolute right-0 z-40 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
                     <p class="border-b border-slate-100 px-3 py-2 text-xs text-slate-500">{{ auth()->user()->email }}</p>
-                    <a wire:navigate href="{{ route('home') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-slate-100">Lihat Blog ↗</a>
-                    <a wire:navigate href="{{ route('reader.account') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-slate-100">Profil</a>
+                    <a href="{{ route('home') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-slate-100">Lihat Blog ↗</a>
+                    <a href="{{ route('reader.account') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-slate-100">Profil</a>
                     <form action="{{ route('admin.logout') }}" method="post">@csrf<button type="submit" class="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100">Keluar</button></form>
                 </div>
             </div>

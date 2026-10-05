@@ -111,17 +111,17 @@
     "src": "node_modules/.pnpm/tom-select@2.6.2/node_modules/tom-select/dist/esm/tom-select.complete.js",
     "isDynamicEntry": true
   },
-  "resources/css/app.css": {
-    "file": "assets/app-DhRpuyaj.css",
-    "src": "resources/css/app.css",
+  "resources/css/admin.css": {
+    "file": "assets/admin-D36n1CUp.css",
+    "src": "resources/css/admin.css",
     "isEntry": true,
-    "name": "app",
+    "name": "admin",
     "names": [
-      "app.css"
+      "admin.css"
     ]
   },
   "resources/css/public.css": {
-    "file": "assets/public-1icU32Hh.css",
+    "file": "assets/public-Ch6FnYcX.css",
     "src": "resources/css/public.css",
     "isEntry": true,
     "name": "public",
@@ -129,10 +129,10 @@
       "public.css"
     ]
   },
-  "resources/js/app.js": {
-    "file": "assets/app-CZ5VekTZ.js",
-    "name": "app",
-    "src": "resources/js/app.js",
+  "resources/js/admin.js": {
+    "file": "assets/admin-Da0TSG5I.js",
+    "name": "admin",
+    "src": "resources/js/admin.js",
     "isEntry": true,
     "imports": [
       "_preload-helper-I4rgV-VL.js",

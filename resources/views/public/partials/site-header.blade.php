@@ -1,7 +1,7 @@
 <header class="public-site-header" x-data="{ open: false }" @keydown.escape.window="open = false" x-effect="document.body.style.overflow = open ? 'hidden' : ''">
     <div class="public-header-inner">
         <a wire:navigate href="{{ route('home') }}" class="public-brand" aria-label="Besofton Insights, beranda">
-            <span class="public-brand-mark"><img src="{{ $logoUrl }}" alt="" width="100" height="100"></span>
+            <span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : '' }}"><img src="{{ $logoUrl }}" alt="" width="100" height="100"></span>
             <span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span>
         </a>
         <nav class="public-desktop-nav" aria-label="Navigasi utama">
@@ -33,7 +33,7 @@
                         <a wire:navigate href="{{ route('reader.account') }}">Akun</a>
                         <a wire:navigate href="{{ route('reader.account') }}#bookmarks">Bookmark</a>
                         <a wire:navigate href="{{ route('reader.account') }}#learning">Lanjutkan Belajar</a>
-                        @can('cms.access')<a wire:navigate href="{{ route('admin.dashboard') }}">Masuk ke CMS</a>@endcan
+                        @can('cms.access')<a href="{{ route('admin.dashboard') }}">Masuk ke CMS</a>@endcan
                         <form method="post" action="{{ route('reader.logout') }}">@csrf<button type="submit">Keluar</button></form>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
             <a wire:navigate href="{{ route('reader.account') }}" @click="open = false">Akun</a>
             <a wire:navigate href="{{ route('reader.account') }}#bookmarks" @click="open = false">Bookmark</a>
             <a wire:navigate href="{{ route('reader.account') }}#learning" @click="open = false">Lanjutkan Belajar</a>
-            @can('cms.access')<a wire:navigate href="{{ route('admin.dashboard') }}" @click="open = false">Masuk ke CMS</a>@endcan
+            @can('cms.access')<a href="{{ route('admin.dashboard') }}" @click="open = false">Masuk ke CMS</a>@endcan
             <form method="post" action="{{ route('reader.logout') }}">@csrf<button type="submit">Keluar</button></form>
         @else
             <a wire:navigate href="{{ route('login') }}" @click="open = false">Masuk</a>

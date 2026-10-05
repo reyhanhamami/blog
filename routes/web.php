@@ -129,6 +129,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
     Route::get('/posts/{post}/sources/{source}/edit', [PostSourceController::class, 'edit'])->name('posts.sources.edit');
     Route::patch('/posts/{post}/sources/{source}', [PostSourceController::class, 'update'])->name('posts.sources.update');
     Route::delete('/posts/{post}/sources/{source}', [PostSourceController::class, 'destroy'])->name('posts.sources.destroy');
+    Route::get('/articles', fn () => redirect()->route('admin.posts.index'))->name('posts.legacy-index');
+    Route::get('/articles/create', fn () => redirect()->route('admin.posts.create'))->name('posts.legacy-create');
+    Route::get('/articles', fn () => redirect()->route('admin.posts.index'))->name('posts.legacy-index');
+    Route::get('/articles/create', fn () => redirect()->route('admin.posts.create'))->name('posts.legacy-create');
     Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::post('/posts/bulk', [PostController::class, 'bulk'])->name('posts.bulk');

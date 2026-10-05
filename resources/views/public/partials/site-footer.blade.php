@@ -12,7 +12,7 @@
     </section>
     <div class="public-footer-inner">
         <div class="public-footer-intro">
-            <a wire:navigate href="{{ route('home') }}" class="public-brand public-footer-brand" aria-label="Besofton Insights, beranda"><span class="public-brand-mark"><img src="{{ $logoUrl }}" alt="" width="100" height="100" loading="lazy"></span><span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span></a>
+            <a wire:navigate href="{{ route('home') }}" class="public-brand public-footer-brand" aria-label="Besofton Insights, beranda"><span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : '' }}"><img src="{{ $logoUrl }}" alt="" width="100" height="100" loading="lazy"></span><span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span></a>
             <p>Ide, panduan, dan strategi digital untuk terus tumbuh.</p>
             @if($socialLinks->isNotEmpty())
                 <div class="public-footer-social" aria-label="Media sosial Besofton">
