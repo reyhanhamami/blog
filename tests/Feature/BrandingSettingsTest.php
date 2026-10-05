@@ -53,6 +53,20 @@ test('valid logo formats are stored and shown on the public page', function (str
     $this->get(route('admin.settings.edit'))->assertOk()->assertSee(asset($path), false);
 })->with(['logo.png', 'logo.jpg', 'logo.webp']);
 
+test('custom public logo renders in header and footer without square dimensions', function () {
+    Setting::putValue('logo_url', 'https://example.test/besofton-horizontal.webp');
+
+    $html = $this->get(route('home'))->assertOk()->getContent();
+    expect(substr_count($html, 'src="https://example.test/besofton-horizontal.webp" alt="Besofton"'))->toBe(2);
+    expect(substr_count($html, 'public-brand-mark-custom'))->toBe(2);
+    expect($html)->not->toContain('src="https://example.test/besofton-horizontal.webp" alt="Besofton" width="100" height="100"');
+
+    Setting::putValue('logo_url', '');
+    $fallback = $this->get(route('home'))->assertOk()->getContent();
+    expect(substr_count($fallback, 'public-brand-mark-default'))->toBe(2);
+    expect(substr_count($fallback, '<strong>BESOFTON</strong>'))->toBe(2);
+});
+
 test('valid favicon is stored and appears in the public head', function (string $filename) {
     $file = $filename === 'favicon.ico'
         ? UploadedFile::fake()->createWithContent($filename, file_get_contents(public_path('favicon.ico')))

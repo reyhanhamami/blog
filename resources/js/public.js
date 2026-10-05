@@ -1,4 +1,41 @@
+function markPaddedPublicLogos() {
+    document.querySelectorAll('.public-brand-mark-custom img').forEach(image => {
+        if (image.dataset.logoPaddingChecked) return;
+        image.dataset.logoPaddingChecked = '1';
+
+        const inspect = () => {
+            if (!image.naturalWidth || !image.naturalHeight) return;
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 48;
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                if (!context) return;
+                context.drawImage(image, 0, 0, 48, 48);
+                const pixels = context.getImageData(0, 0, 48, 48).data;
+                let minX = 48, minY = 48, maxX = -1, maxY = -1;
+                for (let y = 0; y < 48; y++) {
+                    for (let x = 0; x < 48; x++) {
+                        if (pixels[(y * 48 + x) * 4 + 3] <= 32) continue;
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+                if (maxX >= 0 && maxX - minX + 1 < 38 && maxY - minY + 1 < 38) {
+                    image.closest('.public-brand-custom')?.classList.add('public-brand-padded');
+                }
+            } catch {
+                // External images without canvas access keep their proportional base size.
+            }
+        };
+
+        if (image.complete) inspect();
+        else image.addEventListener('load', inspect, { once: true });
+    });
+}
 function initPublicPage() {
+    markPaddedPublicLogos();
     document.querySelectorAll('[data-toast]').forEach(element => {
         const toast = document.createElement('div');
         toast.className = 'public-toast'; toast.setAttribute('role', 'status');

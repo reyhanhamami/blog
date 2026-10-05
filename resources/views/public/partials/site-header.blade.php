@@ -1,8 +1,8 @@
 <header class="public-site-header" x-data="{ open: false }" @keydown.escape.window="open = false" x-effect="document.body.style.overflow = open ? 'hidden' : ''">
     <div class="public-header-inner">
-        <a wire:navigate href="{{ route('home') }}" class="public-brand" aria-label="Besofton Insights, beranda">
-            <span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : '' }}"><img src="{{ $logoUrl }}" alt="" width="100" height="100"></span>
-            <span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span>
+        <a wire:navigate href="{{ route('home') }}" class="public-brand{{ $customLogo ? ' public-brand-custom' : '' }}" aria-label="Besofton Insights, beranda">
+            <span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : 'public-brand-mark-default' }}"><img src="{{ $logoUrl }}" alt="Besofton"></span>
+            @unless($customLogo)<span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span>@endunless
         </a>
         <nav class="public-desktop-nav" aria-label="Navigasi utama">
             @foreach($headerLinks as $link)

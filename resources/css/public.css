@@ -22,10 +22,12 @@
 .public-site-header { position: relative; z-index: 30; background: #fbf9f5; border-bottom: 1px solid #eeeae4; }
 .public-header-inner { min-height: 71px; display: grid; grid-template-columns: 265px 1fr auto; align-items: center; gap: 22px; }
 .public-brand { display: inline-flex; align-items: center; gap: 10px; width: 215px; height: 48px; }
-.public-brand-mark { position: relative; display: block; width: 34px; height: 34px; flex: none; overflow: hidden; border-radius: 8px; background: #090909; }
-.public-brand-mark img { position: absolute; display: block; width: 100px; height: 100px; max-width: none; left: -33px; top: -13px; }
-.public-brand-mark-custom { background: transparent; }
-.public-brand-mark-custom img { position: static; width: 100%; height: 100%; max-width: 100%; object-fit: contain; }
+.public-brand-mark-default { position: relative; display: block; width: 34px; height: 34px; flex: none; overflow: hidden; border-radius: 8px; background: #090909; }
+.public-brand-mark-default img { position: absolute; display: block; width: 100px; height: 100px; max-width: none; left: -33px; top: -13px; }
+.public-brand-mark-custom { display: flex; align-items: center; width: auto; height: auto; max-width: 100%; flex: 0 1 auto; overflow: visible; border-radius: 0; background: transparent; }
+.public-brand-mark-custom img { position: static; display: block; width: auto; height: auto; max-width: 100%; max-height: 48px; object-fit: contain; object-position: left center; }
+.public-footer-brand.public-brand-custom { height: auto; }
+.public-footer-brand .public-brand-mark-custom img { max-height: 64px; }
 .public-brand-text { display: flex; flex-direction: column; gap: 1px; white-space: nowrap; }
 .public-brand-text strong { font-size: 13px; line-height: 1; font-weight: 800; letter-spacing: -.04em; }
 .public-brand-text small { font-size: 6px; font-weight: 600; letter-spacing: .22em; }
@@ -300,8 +302,8 @@ a.public-card:hover, .public-card:hover { border-color: #ba8736; transform: tran
 .public-site-header { position: sticky; top: 0; }
 .public-header-inner { min-height: 82px; grid-template-columns: 260px minmax(0, 1fr) auto; }
 .public-brand { width: 245px; height: 62px; gap: 12px; }
-.public-brand-mark { width: 46px; height: 46px; border-radius: 10px; }
-.public-brand-mark img { width: 112px; height: 112px; left: -33px; top: -20px; object-fit: contain; }
+.public-brand-mark-default { width: 46px; height: 46px; border-radius: 10px; }
+.public-brand-mark-default img { width: 112px; height: 112px; left: -33px; top: -20px; object-fit: contain; }
 .public-brand-text strong { font-size: 18px; }
 .public-brand-text small { font-size: 7px; letter-spacing: .15em; }
 .public-desktop-nav { gap: clamp(10px, 1.5vw, 28px); }
@@ -670,4 +672,55 @@ a.public-card:hover, .public-card:hover { border-color: #ba8736; transform: tran
     .public-site-footer .public-footer-bottom { flex-direction: column; gap: 6px; margin-top: 0; }
     .discovery-article-grid.is-double { grid-template-columns: 1fr; }
     .discovery-toolbar .discovery-field { flex-basis: 100%; }
+}
+
+/* Keep uploaded logos proportional; compensate only for large transparent canvas. */
+.public-site-header:has(.public-brand-mark-custom) .public-header-inner { min-height: 96px; }
+.public-site-header .public-brand-custom { width: fit-content; max-width: 230px; height: auto; }
+.public-site-header .public-brand-mark-custom img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 220px;
+    max-height: 94px;
+    object-fit: contain;
+    object-position: left center;
+}
+.public-site-header .public-brand-padded .public-brand-mark-custom img {
+    max-width: 180px;
+    transform: scale(1.25);
+    transform-origin: left center;
+}
+.public-site-footer .public-footer-brand.public-brand-custom { width: fit-content; max-width: 250px; height: auto; }
+.public-site-footer .public-brand-mark-custom img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 240px;
+    max-height: 116px;
+    object-fit: contain;
+    object-position: left center;
+}
+.public-site-footer .public-brand-padded .public-brand-mark-custom img {
+    max-width: 195px;
+    transform: scale(1.25);
+    transform-origin: left center;
+}
+.public-site-footer .public-footer-brand.public-brand-custom + p { margin-top: 20px; }
+.public-site-footer .public-footer-brand.public-brand-padded + p { margin-top: 4px; }
+@media (max-width: 1200px) {
+    .public-site-header .public-brand-mark-custom img { max-width: 185px; max-height: 82px; }
+    .public-site-header .public-brand-padded .public-brand-mark-custom img { max-width: 150px; }
+    .public-site-footer .public-brand-mark-custom img { max-width: 210px; max-height: 104px; }
+    .public-site-footer .public-brand-padded .public-brand-mark-custom img { max-width: 175px; }
+}
+@media (max-width: 980px) {
+    .public-site-header:has(.public-brand-mark-custom) .public-header-inner { min-height: 84px; }
+}
+@media (max-width: 530px) {
+    .public-site-header:has(.public-brand-mark-custom) .public-header-inner { min-height: 78px; }
+    .public-site-header .public-brand-mark-custom img { max-width: 155px; max-height: 72px; }
+    .public-site-header .public-brand-padded .public-brand-mark-custom img { max-width: 128px; }
+    .public-site-footer .public-brand-mark-custom img { max-width: 185px; max-height: 90px; }
+    .public-site-footer .public-brand-padded .public-brand-mark-custom img { max-width: 150px; }
 }
