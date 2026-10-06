@@ -12,7 +12,7 @@
             @error($name)<p class="error">{{ $message }}</p>@enderror
         </div>
         @if($module === 'categories')
-            <div><label class="form-label">Penulis</label><select class="form-input" data-search-select name="author_id"><option value="">—</option>@foreach($authors as $author)<option value="{{ $author->id }}" @selected(old('author_id', $post->author_id) == $author->id)>{{ $author->name }}</option>@endforeach</select></div>
+            <div><label class="form-label">Penulis</label><select class="form-input" data-search-select name="author_id"><option value="">—</option>@foreach($authors as $author)<option value="{{ $author->id }}" data-author-bio="{{ (bool) ($author->short_bio ?: $author->full_bio) }}" @selected(old('author_id', $post->author_id) == $author->id)>{{ $author->name }}</option>@endforeach</select></div>
         @endif
     @endforeach
     <p class="text-sm text-green-700" data-taxonomy-success role="status" hidden></p>

@@ -1,4 +1,5 @@
 import { initMediaGallery, safeImageUrl, uploadMedia } from './media-library';
+import { initSeoAnalyzer } from './admin/seo-analyzer-ui';
 
 const slugify = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -6,6 +7,7 @@ export function initArticleForm() {
     const form = document.querySelector('[data-post-form]');
     if (!form) return null;
     const abort = new AbortController();
+    const analyzer = initSeoAnalyzer(form);
     const listen = (target, name, callback) => target?.addEventListener(name, callback, { signal: abort.signal });
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
@@ -118,6 +120,7 @@ export function initArticleForm() {
     }
     function setImage(kind, url, media = {}) {
         imageValue(kind).value = url;
+        form.dispatchEvent(new Event('seo:state-change'));
         const field = fields[kind];
         const image = field.querySelector('[data-image-preview]');
         image.hidden = !url;
@@ -213,10 +216,11 @@ export function initArticleForm() {
         ogControl.querySelector('[data-og-custom]').hidden = !custom;
         ogControl.querySelector('[data-og-featured-preview]').hidden = custom;
         imageValue('og').value = custom ? ogCustomValue : '';
+        form.dispatchEvent(new Event('seo:state-change'));
     }
     form.querySelectorAll('[name="og_image_mode"]').forEach(input => listen(input, 'change', syncOgMode));
     listen(form, 'submit', syncOgMode);
     syncOgMode();
 
-    return { destroy() { abort.abort(); gallery.destroy(); releaseObjectUrl(); if (taxonomy.open) taxonomy.close(); if (picker.open) picker.close(); } };
+    return { destroy() { analyzer.destroy(); abort.abort(); gallery.destroy(); releaseObjectUrl(); if (taxonomy.open) taxonomy.close(); if (picker.open) picker.close(); } };
 }

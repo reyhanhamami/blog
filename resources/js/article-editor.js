@@ -1,4 +1,5 @@
 import { initMediaGallery, uploadMedia } from './media-library';
+import { headingStructure } from './admin/heading-structure.js';
 
 const ALLOWED_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'U', 'S', 'DEL', 'BLOCKQUOTE', 'PRE', 'CODE', 'A', 'IMG', 'FIGURE', 'FIGCAPTION', 'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD', 'BR', 'HR']);
 const DISCARD_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'FORM', 'INPUT', 'BUTTON', 'SVG', 'MATH', 'TEMPLATE', 'NOSCRIPT']);
@@ -153,15 +154,11 @@ export function initArticleEditor() {
         count.textContent = `${new Intl.NumberFormat('id-ID').format(words.length)} kata · ±${Math.ceil(words.length / 200)} menit baca`;
         const headings = [...editor.querySelectorAll('h1,h2,h3,h4,h5,h6')];
         const warnings = [];
-        const bodyH1 = headings.filter(heading => heading.tagName === 'H1').length;
+        const structureResult = headingStructure(headings.map(heading => ({ level: Number(heading.tagName[1]), text: heading.textContent.trim() })));
+        const bodyH1 = structureResult.bodyH1Count;
         if (bodyH1) warnings.push('Judul artikel pada halaman publik sudah menggunakan H1. Untuk struktur SEO yang lebih baik, gunakan H2 untuk bagian utama artikel.');
         if (bodyH1 > 1) warnings.push(`Ada ${bodyH1} H1 tambahan di isi artikel. Periksa kembali hierarki heading.`);
-        let previous = 1;
-        for (const heading of headings) {
-            const level = Number(heading.tagName[1]);
-            if (level > previous + 1) warnings.push(`Hierarki melompat dari H${previous} ke H${level}: ${heading.textContent.trim()}`);
-            previous = level;
-        }
+        for (const jump of structureResult.skipped) warnings.push(`Hierarki melompat dari H${jump.from} ke H${jump.to}: ${jump.text}`);
         structure.replaceChildren();
         const headingLabel = document.createElement('p'); headingLabel.textContent = 'Struktur heading: H1 Judul halaman'; structure.append(headingLabel);
         for (const heading of headings) {
@@ -178,6 +175,7 @@ export function initArticleEditor() {
     function change() {
         dirty = true;
         sync();
+        source.dispatchEvent(new Event('input', { bubbles: true }));
         status.textContent = 'Perubahan belum disimpan';
         updateHistory();
         clearTimeout(timer);
@@ -485,7 +483,7 @@ export function initArticleEditor() {
     listen(form, 'submit', () => { sync(); dirty = false; localStorage.removeItem(key); }, { capture: true });
     get('[data-editor-command="undo"]').disabled = true;
     get('[data-editor-command="redo"]').disabled = true;
-    decorateYoutube(); decorateImages(); updateStats(); restoreDraft();
+    decorateYoutube(); decorateImages(); sync(); updateStats(); restoreDraft();
 
     return {
         get dirty() { return dirty; },

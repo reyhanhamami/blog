@@ -3,6 +3,10 @@
     "file": "assets/_commonjsHelpers-Cpj98o6Y.js",
     "name": "_commonjsHelpers"
   },
+  "_heading-structure-Dr0XyXjP.js": {
+    "file": "assets/heading-structure-Dr0XyXjP.js",
+    "name": "heading-structure"
+  },
   "_index-DlfFiluo.js": {
     "file": "assets/index-DlfFiluo.js",
     "name": "index",
@@ -112,7 +116,7 @@
     "isDynamicEntry": true
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-CQvfLYFr.css",
+    "file": "assets/admin-DbzFi-2r.css",
     "src": "resources/css/admin.css",
     "isEntry": true,
     "name": "admin",
@@ -130,7 +134,7 @@
     ]
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-DdwFCIPc.js",
+    "file": "assets/admin-CVRvYvsk.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
@@ -162,13 +166,14 @@
     ]
   },
   "resources/js/article-editor.js": {
-    "file": "assets/article-editor-BJC-6kJW.js",
+    "file": "assets/article-editor-1Zuv0c9v.js",
     "name": "article-editor",
     "src": "resources/js/article-editor.js",
     "isDynamicEntry": true,
     "imports": [
       "_preload-helper-I4rgV-VL.js",
       "resources/js/admin.js",
+      "_heading-structure-Dr0XyXjP.js",
       "_prism-BkdiT68X.js",
       "__commonjsHelpers-Cpj98o6Y.js",
       "node_modules/.pnpm/prismjs@1.30.0/node_modules/prismjs/components/prism-markup.js",
@@ -187,12 +192,13 @@
     ]
   },
   "resources/js/article-form.js": {
-    "file": "assets/article-form-CbIWNK8x.js",
+    "file": "assets/article-form-DWla_oEH.js",
     "name": "article-form",
     "src": "resources/js/article-form.js",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/admin.js",
+      "_heading-structure-Dr0XyXjP.js",
       "_preload-helper-I4rgV-VL.js",
       "_prism-BkdiT68X.js",
       "__commonjsHelpers-Cpj98o6Y.js",

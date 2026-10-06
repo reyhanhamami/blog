@@ -199,7 +199,7 @@ class PostController extends Controller
 
     private function formData(Post $post): array
     {
-        $post->loadMissing(['tags', 'topics', 'relatedPosts']);
+        $post->loadMissing(['tags', 'topics', 'relatedPosts', 'sources']);
 
         return ['post' => $post, 'authors' => Author::orderBy('name')->get(), 'categories' => Category::orderBy('name')->get(), 'tags' => Tag::orderBy('name')->get(), 'topics' => Topic::orderBy('name')->get(), 'relatedOptions' => Post::published()->when($post->exists, fn ($q) => $q->where('id', '!=', $post->id))->orderBy('title')->get(['id', 'title']), 'quizOptions' => Quiz::where('status', 'published')->when($post->quiz_id, fn ($q) => $q->orWhere('id', $post->quiz_id))->orderBy('title')->get(['id', 'title'])];
     }
@@ -222,6 +222,7 @@ class PostController extends Controller
             'featured_image' => ['nullable', 'url:http,https', 'max:2048'],
             'featured_image_alt' => ['nullable', 'string', 'max:191'],
             'seo_title' => ['nullable', 'string', 'max:191'],
+            'focus_keyphrase' => ['nullable', 'string', 'max:191'],
             'seo_description' => ['nullable', 'string', 'max:300'],
             'og_title' => ['nullable', 'string', 'max:191'],
             'og_description' => ['nullable', 'string', 'max:300'],
