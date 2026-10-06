@@ -29,7 +29,7 @@ class PostWriter
                 $data['published_at'] = null;
                 $data['scheduled_at'] = null;
             }
-            $post->fill(collect($data)->except(['tags', 'topics', 'related_posts'])->all());
+            $post->fill(collect($data)->except(['tags', 'topics', 'related_posts', 'references'])->all());
             if ($creating) {
                 $post->created_by = $actor->id;
             }
@@ -38,6 +38,18 @@ class PostWriter
             $post->tags()->sync($data['tags'] ?? []);
             $post->topics()->sync($data['topics'] ?? []);
             $post->relatedPosts()->sync(array_diff($data['related_posts'] ?? [], [$post->id]));
+            if (array_key_exists('references', $data)) {
+                $ids = [];
+                foreach ($data['references'] as $index => $reference) {
+                    $source = ! empty($reference['id']) ? $post->sources()->findOrFail($reference['id']) : $post->sources()->make();
+                    $source->title = $reference['title'];
+                    $source->url = $reference['url'];
+                    $source->sort_order = $index;
+                    $source->save();
+                    $ids[] = $source->id;
+                }
+                $post->sources()->whereNotIn('id', $ids)->delete();
+            }
             if ($oldSlug && $oldSlug !== $post->slug && $post->status === 'published') {
                 DB::table('redirects')->updateOrInsert(['from_path' => '/'.$oldSlug], ['to_path' => '/'.$post->slug, 'status_code' => 301, 'created_at' => now(), 'updated_at' => now()]);
             }

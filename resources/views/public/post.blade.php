@@ -1,7 +1,10 @@
 @extends('public.layout')
-@php $articleSeoTitle = $post->seo_title ?: $post->title; @endphp
+@php
+$articleSeoTitle = $post->seo_title ?: $post->title;
+$articleDescription = $post->seo_description ?: $post->excerpt ?: \Illuminate\Support\Str::limit($post->content_plain ?: strip_tags($post->content ?? '') ?: $post->title, 155);
+@endphp
 @section('seo_title', \Illuminate\Support\Str::endsWith($articleSeoTitle, ' | Besofton Insights') ? $articleSeoTitle : $articleSeoTitle.' | Besofton Insights')
-@section('seo_description', $post->seo_description ?: $post->excerpt ?: \Illuminate\Support\Str::limit($post->content_plain ?: strip_tags($post->content ?? '') ?: $post->title, 155))
+@section('seo_description', $articleDescription)
 @section('canonical', url('/'.$post->slug))
 @section('robots', ($preview || $post->noindex) ? 'noindex,nofollow' : 'index,follow')
 @section('og_type', 'article')
@@ -16,7 +19,7 @@ $schema = [
     '@context' => 'https://schema.org',
     '@type' => 'Article',
     'headline' => $post->title,
-    'description' => $post->seo_description ?: $post->excerpt ?: \Illuminate\Support\Str::limit($post->content_plain ?: strip_tags($post->content ?? '') ?: $post->title, 155),
+    'description' => $articleDescription,
     'datePublished' => $post->published_at?->toAtomString(),
     'dateModified' => $post->updated_at?->toAtomString(),
     'author' => ['@type' => 'Person', 'name' => $post->author?->name ?? 'Tim Besofton'],

@@ -1,1 +1,20 @@
 @import './app.css';
+
+/* Article form layout is based on CMS content width, after the sidebar. */
+.admin-post-layout { container-type: inline-size; }
+.admin-post-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.admin-post-main, .admin-post-analysis, .admin-post-actions { min-width: 0; }
+.admin-post-main { position: relative; z-index: 1; }
+.admin-post-analysis { position: static; align-self: start; overflow: visible; overflow-wrap: anywhere; }
+.admin-post-actions { grid-column: 1 / -1; z-index: 2; }
+.admin-post-form:has(.editor-focus) .admin-post-actions { visibility: hidden; }
+.admin-post-form :is(input, textarea, select, [data-article-editor]) { scroll-margin-block: 1.5rem 6rem; }
+.admin-post-main .ts-dropdown { z-index: 50; }
+.admin-post-analysis [role="tablist"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-post-analysis [role="tab"] { min-width: 0; white-space: nowrap; }
+
+@container (min-width: 1160px) {
+    .admin-post-form { grid-template-columns: minmax(0, 1fr) 380px; }
+    .admin-post-analysis { position: sticky; top: 1rem; z-index: 0; max-height: calc(100dvh - 7.5rem); overflow-y: auto; overscroll-behavior: contain; }
+    .admin-post-analysis [role="tablist"] { position: sticky; top: 0; z-index: 1; background: white; }
+}

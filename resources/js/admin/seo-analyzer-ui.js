@@ -1,7 +1,7 @@
-import { analyzeArticle, extractContentFacts, groupStatus } from './seo-analyzer';
+import { analyzeArticle, extractContentFacts, groupStatus, validReference } from './seo-analyzer';
 
-const labels = { good: 'Baik', improvement: 'Perlu diperbaiki', problem: 'Masalah' };
-const colors = { good: 'text-green-700 bg-green-50 border-green-200', improvement: 'text-amber-800 bg-amber-50 border-amber-200', problem: 'text-red-700 bg-red-50 border-red-200' };
+const labels = { good: 'Baik', info: 'Info', improvement: 'Perlu diperbaiki', problem: 'Masalah' };
+const colors = { good: 'text-green-700 bg-green-50 border-green-200', info: 'text-slate-700 bg-slate-50 border-slate-200', improvement: 'text-amber-800 bg-amber-50 border-amber-200', problem: 'text-red-700 bg-red-50 border-red-200' };
 const groups = { seo: 'SEO', readability: 'Readability', aeo: 'AEO' };
 const formatter = new Intl.NumberFormat('id-ID');
 
@@ -23,13 +23,15 @@ export function initSeoAnalyzer(form) {
     function readState() {
         const author = form.querySelector('[name="author_id"]');
         const authorOption = author?.options[author.selectedIndex];
+        const references = [...form.querySelectorAll('[data-reference-row]')].filter(row => row.querySelector('[name$="[title]"]')?.value.trim()).map(row => row.querySelector('[name$="[url]"]')?.value.trim()).filter(validReference);
         return {
             siteUrl: panel.dataset.siteUrl, title: value('title'), slug: value('slug'), excerpt: value('excerpt'), content: value('content'),
             seoTitle: value('seo_title'), seoDescription: value('seo_description'), focusKeyphrase: value('focus_keyphrase'),
             featuredImage: value('featured_image'), featuredAlt: value('featured_image_alt'), ogImage: value('og_image'),
             directAnswer: value('direct_answer'), keyTakeaways: value('key_takeaways'), category: value('category_id'),
             author: value('author_id'), authorBio: authorOption?.dataset.authorBio === '1', topicCount: selected('topics[]'),
-            sourceCount: Number(panel.dataset.sourceCount || 0), savedDate: panel.dataset.savedDate, publishedDate: panel.dataset.publishedDate,
+            sourceCount: references.length, references, authorFallback: panel.dataset.authorFallback,
+            postExists: panel.dataset.postExists === '1', savedDate: panel.dataset.savedDate, publishedDate: panel.dataset.publishedDate, scheduledDate: value('scheduled_at'),
             noindex: chosen('noindex'), status: value('status'), contentType: value('content_type'),
         };
     }
@@ -44,17 +46,21 @@ export function initSeoAnalyzer(form) {
     function showRules(results) {
         const container = panel.querySelector('[data-analysis-results]');
         container.replaceChildren();
-        for (const status of ['problem', 'improvement', 'good']) {
+        for (const status of ['problem', 'improvement', 'info', 'good']) {
             const rows = results.filter(row => row.group === active && row.status === status);
+            if (!rows.length) {
+                if (status !== 'info') container.append(element('p', `rounded-lg border px-3 py-1.5 text-xs ${colors[status]}`, `✓ ${labels[status]} (0)`));
+                continue;
+            }
             const details = document.createElement('details');
             details.className = `rounded-lg border ${colors[status]}`;
-            details.open = status !== 'good';
+            details.open = status === 'problem' || status === 'improvement' || status === 'info';
             const summary = element('summary', 'cursor-pointer px-3 py-2 text-sm font-semibold', `${labels[status]} (${rows.length})`);
             details.append(summary);
             const list = element('ul', 'space-y-1 border-t border-current/10 p-2');
             for (const row of rows) {
                 const item = element('li', 'rounded-md bg-white/70 p-2 text-xs');
-                const target = row.target ? form.elements.namedItem(row.target) || form.querySelector(`[name="${row.target}"]`) : null;
+                const target = row.target === 'references' ? form.querySelector('[data-references] [name$="[url]"]') || form.querySelector('[data-reference-add]') : row.target ? form.elements.namedItem(row.target) || form.querySelector(`[name="${row.target}"]`) : null;
                 const heading = element(target ? 'button' : 'strong', target ? 'block text-left font-semibold underline-offset-2 hover:underline focus:underline' : 'block font-semibold', row.title);
                 if (target) {
                     heading.type = 'button';
@@ -67,7 +73,6 @@ export function initSeoAnalyzer(form) {
                 item.append(heading, element('p', 'mt-1 text-slate-700', row.message));
                 list.append(item);
             }
-            if (!rows.length) list.append(element('li', 'p-2 text-xs', 'Tidak ada catatan.'));
             details.append(list);
             container.append(details);
         }
@@ -93,7 +98,7 @@ export function initSeoAnalyzer(form) {
         panel.querySelector('[data-analysis-stats]').textContent = `${formatter.format(analysis.facts.wordCount)} kata · ±${Math.ceil(analysis.facts.wordCount / 200)} menit baca`;
         const notice = panel.querySelector('[data-analysis-notice]');
         notice.hidden = !analysis.noindex && !!state.focusKeyphrase.trim();
-        notice.textContent = analysis.noindex ? 'Artikel disetel noindex. Analisis konten tetap tersedia; pemeriksaan keyphrase untuk indeks pencarian disembunyikan.' : 'Tambahkan Focus Keyphrase untuk analisis SEO yang lebih lengkap.';
+        notice.textContent = analysis.noindex ? 'Artikel disetel noindex. Analisis konten tetap tersedia; pemeriksaan keyphrase untuk indeks pencarian disembunyikan.' : 'Tambahkan Focus Keyphrase untuk mengaktifkan analisis keyphrase.';
         panel.querySelector('[data-analysis-preview-title]').textContent = analysis.preview.title;
         panel.querySelector('[data-analysis-preview-url]').textContent = `${state.siteUrl.replace(/\/$/, '')}/${analysis.preview.slug || 'slug-artikel'}`;
         panel.querySelector('[data-analysis-preview-description]').textContent = analysis.preview.description;

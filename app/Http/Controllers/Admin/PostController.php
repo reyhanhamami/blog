@@ -233,7 +233,30 @@ class PostController extends Controller
             'tags' => ['nullable', 'array'], 'tags.*' => ['integer', 'exists:tags,id'],
             'topics' => ['nullable', 'array'], 'topics.*' => ['integer', 'exists:topics,id'],
             'related_posts' => ['nullable', 'array'], 'related_posts.*' => ['integer', 'exists:posts,id'],
+            'references_present' => ['sometimes', 'accepted'],
+            'references' => ['nullable', 'array'],
+            'references.*.id' => $post ? ['nullable', 'integer', 'distinct', Rule::exists('post_sources', 'id')->where('post_id', $post->id)] : ['prohibited'],
+            'references.*.title' => ['nullable', 'string', 'max:191'],
+            'references.*.url' => ['nullable', 'url:http,https', 'max:2048'],
         ]);
+        if ($request->has('references_present')) {
+            $references = [];
+            foreach ($data['references'] ?? [] as $index => $reference) {
+                $title = trim($reference['title'] ?? '');
+                $url = trim($reference['url'] ?? '');
+                if ($title === '' && $url === '') {
+                    continue;
+                }
+                if ($title === '' || $url === '') {
+                    throw ValidationException::withMessages(['references.'.$index.($title === '' ? '.title' : '.url') => 'Isi judul dan URL referensi.']);
+                }
+                $references[] = ['id' => $reference['id'] ?? null, 'title' => $title, 'url' => $url];
+            }
+            $data['references'] = $references;
+        } else {
+            unset($data['references']);
+        }
+        unset($data['references_present']);
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
         if (in_array($data['slug'], ['admin', 'login', 'register', 'forgot-password', 'akun', 'cari', 'sitemap.xml', 'feed.xml', 'robots.txt'], true) || Page::where('slug', $data['slug'])->exists()) {
             throw ValidationException::withMessages(['slug' => 'Slug ini digunakan halaman sistem.']);

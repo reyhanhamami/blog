@@ -10,6 +10,26 @@ export function initArticleForm() {
     const analyzer = initSeoAnalyzer(form);
     const listen = (target, name, callback) => target?.addEventListener(name, callback, { signal: abort.signal });
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const references = form.querySelector('[data-references]');
+    const referenceList = references?.querySelector('[data-reference-list]');
+    let nextReference = Math.max(-1, ...[...(referenceList?.querySelectorAll('[name$="[url]"]') || [])].map(field => Number(field.name.match(/^references\[(\d+)\]/)?.[1] ?? -1))) + 1;
+    const renumberReferences = () => referenceList?.querySelectorAll('[data-reference-label]').forEach((label, index) => { label.textContent = `Sumber ${index + 1}`; });
+    listen(references?.querySelector('[data-reference-add]'), 'click', () => {
+        const index = nextReference++;
+        const row = document.createElement('div');
+        row.className = 'rounded-lg border border-slate-200 p-3 space-y-3';
+        row.dataset.referenceRow = '';
+        row.innerHTML = `<div class="flex items-center justify-between gap-3"><h3 class="text-sm font-semibold" data-reference-label></h3><button type="button" class="text-xs text-red-700 hover:underline" data-reference-remove>Hapus</button></div><div><label class="form-label">Judul</label><input class="form-input" name="references[${index}][title]" maxlength="191" placeholder="Dokumentasi Docker"></div><div><label class="form-label">URL</label><input class="form-input" type="url" name="references[${index}][url]" maxlength="2048" placeholder="https://docs.docker.com/"></div>`;
+        referenceList.append(row);
+        renumberReferences();
+        row.querySelector('input').focus();
+    });
+    listen(referenceList, 'click', event => {
+        if (!event.target.closest('[data-reference-remove]')) return;
+        event.target.closest('[data-reference-row]').remove();
+        renumberReferences();
+        form.dispatchEvent(new Event('seo:state-change'));
+    });
 
     const taxonomy = document.querySelector('[data-taxonomy-dialog]');
     const taxonomyGet = selector => taxonomy.querySelector(selector);

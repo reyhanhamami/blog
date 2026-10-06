@@ -1,5 +1,5 @@
-<section class="card space-y-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto" data-seo-analysis data-site-url="{{ url('/') }}" data-source-count="{{ $post->sources->filter(fn ($source) => filter_var($source->url, FILTER_VALIDATE_URL) && in_array(parse_url($source->url, PHP_URL_SCHEME), ['http', 'https']))->count() }}" data-saved-date="{{ $post->updated_at?->toAtomString() }}" data-published-date="{{ $post->published_at?->toAtomString() }}" aria-label="SEO dan AEO Analysis">
-    <div><h2 class="text-lg font-semibold">SEO &amp; AEO Analysis</h2><p class="mt-1 text-xs text-slate-500">Panduan praktik dasar, bukan jaminan peringkat pencarian.</p></div>
+<section class="card admin-post-analysis space-y-4" data-seo-analysis data-site-url="{{ url('/') }}" data-post-exists="{{ $post->exists ? '1' : '0' }}" data-author-fallback="Tim Besofton" data-saved-date="{{ $post->updated_at?->toAtomString() }}" data-published-date="{{ $post->published_at?->toAtomString() }}" aria-label="SEO dan AEO Analysis">
+    <div><h2 class="text-lg font-semibold">SEO &amp; AEO Analysis</h2><p class="mt-1 text-xs text-slate-500">Semua indikator tidak harus hijau. Prioritaskan kualitas dan relevansi konten.</p></div>
     <div class="grid grid-cols-3 gap-2 text-center text-xs" data-analysis-summary></div>
     <p class="text-xs text-slate-600" data-analysis-stats aria-live="polite"></p>
     <p class="rounded-lg bg-slate-100 p-3 text-xs text-slate-700" data-analysis-notice hidden></p>

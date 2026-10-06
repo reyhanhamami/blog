@@ -60,6 +60,6 @@ class PostSourceController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate(['title' => ['required', 'string', 'max:191'], 'url' => ['required', 'url', 'max:2048'], 'publisher' => ['nullable', 'string', 'max:191'], 'published_at' => ['nullable', 'date'], 'accessed_at' => ['nullable', 'date'], 'sort_order' => ['required', 'integer', 'min:0']]);
+        return $request->validate(['title' => ['required', 'string', 'max:191'], 'url' => ['required', 'url:http,https', 'max:2048'], 'publisher' => ['nullable', 'string', 'max:191'], 'published_at' => ['nullable', 'date'], 'accessed_at' => ['nullable', 'date'], 'sort_order' => ['required', 'integer', 'min:0']]);
     }
 }
