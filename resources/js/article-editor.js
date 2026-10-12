@@ -117,6 +117,8 @@ export function initArticleEditor() {
     }
 
     function restoreSelection() {
+        // A modal makes the editor inert; release it before restoring the caret.
+        field.querySelectorAll('[data-editor-dialog][open]').forEach(dialog => dialog.close());
         editor.focus();
         if (!savedRange || !editor.contains(savedRange.commonAncestorContainer)) return;
         const selection = window.getSelection();

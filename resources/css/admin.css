@@ -1,20 +1,60 @@
 @import './app.css';
 
-/* Article form layout is based on CMS content width, after the sidebar. */
+/* One width controls every CMS page; mobile keeps its own drawer. */
+.admin-shell { --cms-sidebar-width: 256px; display: grid; grid-template-columns: var(--cms-sidebar-width) minmax(0, 1fr); transition: grid-template-columns 200ms ease; }
+html[data-cms-sidebar="collapsed"] .admin-shell { --cms-sidebar-width: 72px; }
+.cms-sidebar { position: sticky; top: 0; height: 100dvh; min-width: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.cms-brand-compact { display: none; }
+.cms-nav-icon { flex: none; }
+.cms-nav-label { min-width: 0; }
+.cms-sidebar-tooltip { position: fixed; z-index: 60; max-width: calc(100vw - 96px); pointer-events: none; border-radius: 6px; padding: 8px 12px; background: #0f172a; color: white; font-size: 12px; box-shadow: 0 4px 12px #0002; }
+.admin-app :is(a, button):focus-visible { outline: 2px solid #818cf8; outline-offset: 3px; }
+.cms-sidebar-backdrop { position: fixed; inset: 0; z-index: 60; background: #0f172a88; }
+.cms-sidebar-toggle .cms-nav-icon { transition: transform 200ms ease; }
+@media (min-width: 1024px) {
+    html[data-cms-sidebar="collapsed"] .cms-brand-full,
+    html[data-cms-sidebar="collapsed"] .cms-nav-label { display: none; }
+    html[data-cms-sidebar="collapsed"] .cms-brand-compact { display: inline; }
+    html[data-cms-sidebar="collapsed"] .cms-sidebar-brand { justify-content: center; padding: 20px 8px; }
+    html[data-cms-sidebar="collapsed"] .cms-nav { justify-content: center; padding: 12px 0; }
+    html[data-cms-sidebar="collapsed"] .cms-nav-group { font-size: 0; height: 1px; margin: 12px 4px; padding: 0; background: #334155; }
+    html[data-cms-sidebar="expanded"] .cms-sidebar-toggle .cms-nav-icon { transform: rotate(180deg); }
+}
+@media (max-width: 1023px) {
+    .admin-shell { grid-template-columns: minmax(0, 1fr); }
+    .cms-sidebar { position: fixed; left: 0; top: 0; width: min(320px, 88vw); z-index: 70; transform: translateX(-100%); visibility: hidden; transition: transform 200ms ease, visibility 200ms; }
+    .admin-shell[data-sidebar-open="true"] .cms-sidebar { transform: translateX(0); visibility: visible; }
+}
+
+/* 650px editor + 350px analysis + 24px gap, after CMS padding. */
 .admin-post-layout { container-type: inline-size; }
 .admin-post-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
 .admin-post-main, .admin-post-analysis, .admin-post-actions { min-width: 0; }
 .admin-post-main { position: relative; z-index: 1; }
-.admin-post-analysis { position: static; align-self: start; overflow: visible; overflow-wrap: anywhere; }
-.admin-post-actions { grid-column: 1 / -1; z-index: 2; }
-.admin-post-form:has(.editor-focus) .admin-post-actions { visibility: hidden; }
+.admin-analysis-launch { position: sticky; top: 12px; z-index: 20; display: flex; justify-content: flex-end; margin-bottom: 16px; pointer-events: none; }
+.admin-analysis-launch button { pointer-events: auto; box-shadow: 0 3px 12px #0001; }
+.admin-post-analysis { position: fixed; inset: 16px 16px calc(var(--savebar-height, 72px) + 24px) auto; width: min(380px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - var(--savebar-height, 72px) - 40px); margin: 0; z-index: 40; overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; box-shadow: 0 16px 50px #0003; }
+.admin-post-analysis:not([open]) { display: none; }
+.admin-post-analysis::backdrop { background: #0f172a88; }
+.admin-analysis-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.admin-analysis-header button { flex: none; padding: 6px 8px; font-size: 12px; }
+.admin-post-actions { grid-column: 1 / -1; z-index: 50; }
+.admin-post-form:has(.editor-focus) .admin-post-actions,
+.admin-post-layout:has(.editor-focus) .admin-analysis-launch { visibility: hidden; }
 .admin-post-form :is(input, textarea, select, [data-article-editor]) { scroll-margin-block: 1.5rem 6rem; }
 .admin-post-main .ts-dropdown { z-index: 50; }
-.admin-post-analysis [role="tablist"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-post-analysis [role="tablist"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); position: sticky; top: -24px; z-index: 1; background: white; }
 .admin-post-analysis [role="tab"] { min-width: 0; white-space: nowrap; }
 
-@container (min-width: 1160px) {
-    .admin-post-form { grid-template-columns: minmax(0, 1fr) 380px; }
-    .admin-post-analysis { position: sticky; top: 1rem; z-index: 0; max-height: calc(100dvh - 7.5rem); overflow-y: auto; overscroll-behavior: contain; }
-    .admin-post-analysis [role="tablist"] { position: sticky; top: 0; z-index: 1; background: white; }
+.admin-post-main .editor-tool-group { max-width: 100%; flex-wrap: wrap; }
+@container (min-width: 1024px) {
+    .admin-post-form { grid-template-columns: minmax(0, 1fr) 350px; }
+    .admin-analysis-launch, .admin-analysis-header [data-analysis-close] { display: none; }
+    .admin-post-analysis { position: sticky; inset: auto; top: 16px; align-self: start; width: 100%; z-index: 0; max-height: var(--analysis-available-height, calc(100dvh - 290px)); box-shadow: none; }
+}
+@media (max-width: 1023px) {
+    .admin-post-analysis { inset: 12px 12px 12px auto; width: min(380px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .admin-shell, .cms-sidebar, .cms-sidebar-toggle .cms-nav-icon { transition: none; }
 }

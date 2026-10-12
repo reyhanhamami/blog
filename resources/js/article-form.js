@@ -1,5 +1,6 @@
 import { initMediaGallery, safeImageUrl, uploadMedia } from './media-library';
 import { initSeoAnalyzer } from './admin/seo-analyzer-ui';
+import { initAnalyzerPresentation } from './admin/workspace';
 
 const slugify = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -8,6 +9,7 @@ export function initArticleForm() {
     if (!form) return null;
     const abort = new AbortController();
     const analyzer = initSeoAnalyzer(form);
+    const presentation = initAnalyzerPresentation(form);
     const listen = (target, name, callback) => target?.addEventListener(name, callback, { signal: abort.signal });
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const references = form.querySelector('[data-references]');
@@ -242,5 +244,5 @@ export function initArticleForm() {
     listen(form, 'submit', syncOgMode);
     syncOgMode();
 
-    return { destroy() { analyzer.destroy(); abort.abort(); gallery.destroy(); releaseObjectUrl(); if (taxonomy.open) taxonomy.close(); if (picker.open) picker.close(); } };
+    return { destroy() { presentation.destroy(); analyzer.destroy(); abort.abort(); gallery.destroy(); releaseObjectUrl(); if (taxonomy.open) taxonomy.close(); if (picker.open) picker.close(); } };
 }

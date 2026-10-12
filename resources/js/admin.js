@@ -1,5 +1,12 @@
 import { initMediaGallery, safeImageUrl, uploadMedia } from './media-library';
 import './app.js';
+import { initCmsShell } from './admin/workspace';
+
+let cmsShell;
+const initShell = () => { cmsShell?.destroy(); cmsShell = initCmsShell(); };
+document.addEventListener('DOMContentLoaded', initShell);
+document.addEventListener('livewire:navigated', initShell);
+document.addEventListener('livewire:navigating', () => { cmsShell?.destroy(); cmsShell = null; });
 
 function initBrandingPreviews() {
     document.querySelectorAll('[data-branding-upload]').forEach(input => {

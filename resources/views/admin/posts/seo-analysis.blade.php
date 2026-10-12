@@ -1,5 +1,6 @@
-<section class="card admin-post-analysis space-y-4" data-seo-analysis data-site-url="{{ url('/') }}" data-post-exists="{{ $post->exists ? '1' : '0' }}" data-author-fallback="Tim Besofton" data-saved-date="{{ $post->updated_at?->toAtomString() }}" data-published-date="{{ $post->published_at?->toAtomString() }}" aria-label="SEO dan AEO Analysis">
-    <div><h2 class="text-lg font-semibold">SEO &amp; AEO Analysis</h2><p class="mt-1 text-xs text-slate-500">Semua indikator tidak harus hijau. Prioritaskan kualitas dan relevansi konten.</p></div>
+<dialog id="article-analyzer" class="card admin-post-analysis space-y-4" data-seo-analysis data-site-url="{{ url('/') }}" data-post-exists="{{ $post->exists ? '1' : '0' }}" data-author-fallback="Tim Besofton" data-saved-date="{{ $post->updated_at?->toAtomString() }}" data-published-date="{{ $post->published_at?->toAtomString() }}" aria-labelledby="article-analyzer-title">
+    <div class="admin-analysis-header"><h2 id="article-analyzer-title" class="text-lg font-semibold">SEO &amp; AEO Analysis</h2><button type="button" class="btn-secondary" data-analysis-close aria-label="Tutup Analisis">× Tutup</button></div>
+    <p class="text-xs text-slate-500">Semua indikator tidak harus hijau. Prioritaskan kualitas dan relevansi konten.</p>
     <div class="grid grid-cols-3 gap-2 text-center text-xs" data-analysis-summary></div>
     <p class="text-xs text-slate-600" data-analysis-stats aria-live="polite"></p>
     <p class="rounded-lg bg-slate-100 p-3 text-xs text-slate-700" data-analysis-notice hidden></p>
@@ -15,4 +16,4 @@
         @endforeach
     </div>
     <div id="analysis-tab-panel" role="tabpanel" aria-labelledby="analysis-tab-seo" data-analysis-results class="space-y-3" aria-live="polite"></div>
-</section>
+</dialog>
