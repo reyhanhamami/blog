@@ -12,6 +12,7 @@ function mountFeaturedSlider() {
         modules: [Navigation],
         slidesPerView: 1,
         spaceBetween: 0,
+        autoHeight: true,
         loop: false,
         navigation: {
             prevEl: '[data-featured-prev]',

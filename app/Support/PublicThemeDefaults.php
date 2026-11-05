@@ -107,7 +107,6 @@ final class PublicThemeDefaults
         'secondary-090909' => ['secondary', '#090909'],
         'secondary-111111' => ['secondary', '#111111'],
         'secondary-171512' => ['secondary', '#171512'],
-        'secondary-181715' => ['secondary', '#181715'],
         'secondary-181818' => ['secondary', '#181818'],
         'secondary-1c1a17' => ['secondary', '#1c1a17'],
         'secondary-30302e' => ['secondary', '#30302e'],

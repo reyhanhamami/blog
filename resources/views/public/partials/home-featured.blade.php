@@ -3,7 +3,8 @@
     <div class="featured-visual">
         <span class="featured-badge">ARTIKEL UNGGULAN</span>
         @if($image)
-            <img src="{{ $image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" width="960" height="600" loading="lazy">
+            <img class="featured-image-fill" src="{{ $image }}" alt="" aria-hidden="true" width="960" height="600" loading="lazy" decoding="async">
+            <img class="featured-image" src="{{ $image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" width="960" height="600" loading="lazy" decoding="async">
         @else
             <div class="public-image-fallback featured-fallback" role="img" aria-label="Besofton Insights — {{ $post->title }}">
                 <span>BESOFTON<br>INSIGHTS<span class="fallback-dot">.</span></span>

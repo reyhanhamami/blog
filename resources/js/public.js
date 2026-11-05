@@ -1,3 +1,18 @@
+let publicHeaderObserver;
+
+function observePublicHeaderHeight() {
+    publicHeaderObserver?.disconnect();
+    const header = document.querySelector('.public-app .public-site-header');
+    if (!header) return;
+    const sync = () => document.body.style.setProperty('--public-header-height', `${Math.ceil(header.getBoundingClientRect().height)}px`);
+    sync();
+    // Measure branding/font/viewport changes only; sticky scrolling stays in CSS.
+    publicHeaderObserver = new ResizeObserver(sync);
+    publicHeaderObserver.observe(header);
+}
+
+document.addEventListener('livewire:navigating', () => publicHeaderObserver?.disconnect());
+
 function markPaddedPublicLogos() {
     document.querySelectorAll('.public-brand-mark-custom img').forEach(image => {
         if (image.dataset.logoPaddingChecked) return;
@@ -35,6 +50,7 @@ function markPaddedPublicLogos() {
     });
 }
 function initPublicPage() {
+    observePublicHeaderHeight();
     markPaddedPublicLogos();
     document.querySelectorAll('[data-toast]').forEach(element => {
         const toast = document.createElement('div');

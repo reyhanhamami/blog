@@ -2,6 +2,8 @@
 
 Perbaikan ketahanan konfigurasi dan urutan deployment pada 6 November 2026 dijelaskan di [catatan konfigurasi tema](public-theme-configuration-fix.md).
 
+Preset Red White, perbaikan gambar featured, serta sticky sidebar dijelaskan di [laporan presentasi publik](public-presentation.md).
+
 ## Arsitektur
 
 Tema disimpan pada tabel `settings` existing. Key mengikuti `theme_{nama_token_dengan_underscore}_color`, misalnya `theme_primary_color` dan `theme_footer_cta_bg_color`. Tidak ada tabel, migration, library, atau salinan logo baru.
@@ -10,7 +12,7 @@ Tema disimpan pada tabel `settings` existing. Key mengikuti `theme_{nama_token_d
 
 Shared `public/layout.blade.php` menginjeksi variabel CSS tervalidasi pada `<body class="public-body public-app">`. Alias CSS existing sekarang scoped pada `.public-app`, bukan `:root`. Admin tetap menggunakan `admin-app`, `admin.css`, dan `admin.js`. Preview di settings hanya mempunyai variabel inline pada kontainer contoh; tidak memasang kelas public-app atau memuat public.css ke CMS. `meta[name=theme-color]` mengikuti header background. Canonical, schema, metadata artikel, branding, dan business logic tetap memakai sumber existing.
 
-Default inti berasal dari stylesheet existing. `App\Support\PublicThemeDefaults` menyimpan definisi Classic lengkap dan 89 variasi warna beserta parent semantiknya. Kedua file `config/public_theme*.php` merujuk definisi yang sama; service memvalidasi struktur sebelum memakainya. Config hilang/rusak memakai fallback tersebut dan mencatat error terstruktur, tanpa menimpa warna database. Nilai turunan dihitung dari selisih kanal RGB terhadap default, dibatasi 0–255; saat Classic aktif hasilnya sama persis dengan literal asal, termasuk transparansi. Admin mengatur parent semantik, bukan puluhan setting yang menduplikasi fungsi. Surface kartu, gradasi hero, dan warna teks sekunder tetap mempertahankan variasi desain. Warna turunan ikut berubah saat parent diubah.
+Default inti berasal dari stylesheet existing. `App\Support\PublicThemeDefaults` menyimpan definisi Classic lengkap dan 88 variasi warna yang masih digunakan beserta parent semantiknya. Kedua file `config/public_theme*.php` merujuk definisi yang sama; service memvalidasi struktur sebelum memakainya. Config hilang/rusak memakai fallback tersebut dan mencatat error terstruktur, tanpa menimpa warna database. Nilai turunan dihitung dari selisih kanal RGB terhadap default, dibatasi 0–255; saat Classic aktif hasilnya sama persis dengan literal asal, termasuk transparansi. Admin mengatur parent semantik, bukan puluhan setting yang menduplikasi fungsi. Surface kartu, gradasi hero, dan warna teks sekunder tetap mempertahankan variasi desain. Warna turunan ikut berubah saat parent diubah.
 
 Perubahan nilai dari CMS berlaku pada request publik berikutnya, tanpa build, optimize:clear, Redis, worker, atau Node.js runtime di hosting. Build hanya diperlukan ketika source CSS/JS berubah saat deploy.
 
@@ -49,7 +51,7 @@ Perubahan nilai dari CMS berlaku pada request publik berikutnya, tanpa build, op
 
 Section **Tampilan Website** pada `/admin/settings` mengikuti navigasi anchor existing. Editor Livewire terpisah dari form Branding/Homepage/SEO. Enam kelompok warna menampilkan native color picker, input HEX, petunjuk inheritance, error per field, dan Reset individual. Picker dan HEX tersinkron melalui Alpine dengan entangle deferred: perubahan lokal tidak disimpan sebelum **Simpan Tema**.
 
-Preview statis memuat header, brand teks, heading, paragraf, tombol, kartu, tautan, secondary chip, newsletter/input, dan footer. Preset **Besofton Classic**, **Modern Blue**, dan **Forest Green** mengisi form saja. Reset seluruh tema memakai dialog konfirmasi dan tetap membutuhkan Simpan Tema. Batal memulihkan snapshot terakhir yang disimpan. Toast sukses menggunakan SweetAlert existing. Input dan tindakan dinonaktifkan selama save; Livewire menangani loading dan submit. Navigasi Livewire dan penutupan tab memperingatkan perubahan yang belum disimpan. Desktop memakai dua kolom, ukuran lebih kecil disusun vertikal.
+Preview statis memuat header, brand teks, heading, paragraf, tombol, kartu, tautan, secondary chip, newsletter/input, dan footer. Preset **Besofton Classic**, **Modern Blue**, **Forest Green**, dan **Red White** mengisi form saja. Reset seluruh tema memakai dialog konfirmasi dan tetap membutuhkan Simpan Tema. Batal memulihkan snapshot terakhir yang disimpan. Toast sukses menggunakan SweetAlert existing. Input dan tindakan dinonaktifkan selama save; Livewire menangani loading dan submit. Navigasi Livewire dan penutupan tab memperingatkan perubahan yang belum disimpan. Desktop memakai dua kolom, ukuran lebih kecil disusun vertikal.
 
 Gate `settings.manage` diperiksa pada mount, save, dan render komponen, termasuk request Livewire langsung. Pengguna settings.view saja tetap mendapat halaman pengaturan baca saja. Backend menolak field ekstra, field hilang, CSS injection, nama warna, HEX pendek, dan format selain `#RRGGBB`. Nilai legacy invalid diganti fallback default dan dicatat dengan key saja, tanpa mencatat payload CSS.
 
