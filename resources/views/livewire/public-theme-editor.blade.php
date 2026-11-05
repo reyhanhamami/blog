@@ -1,4 +1,4 @@
-<section id="public-theme" class="mt-10 min-w-0" x-data="publicThemeEditor($wire, @js($defaults), @js($presets), @js(config('public_theme_shades', [])))" @public-theme-saved.window="saved()">
+<section id="public-theme" class="mt-10 min-w-0" x-data="publicThemeEditor($wire, @js($defaults), @js($presets), @js($shades))" @public-theme-saved.window="saved()">
     <div class="mb-5"><h2 class="text-xl font-semibold">Tampilan Website</h2><p class="mt-1 text-sm text-slate-500">Besofton Classic mempertahankan desain saat ini. Preview menggunakan contoh komponen statis. Tema aktif berubah setelah Simpan Tema; tampilan CMS tetap terpisah.</p></div>
     <div class="mb-5 flex flex-wrap items-center gap-3">
         <label for="public-theme-preset" class="text-sm font-semibold">Preset</label>

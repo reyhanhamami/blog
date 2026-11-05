@@ -1,5 +1,7 @@
 # Dynamic Public Theme — Besofton Insights
 
+Perbaikan ketahanan konfigurasi dan urutan deployment pada 6 November 2026 dijelaskan di [catatan konfigurasi tema](public-theme-configuration-fix.md).
+
 ## Arsitektur
 
 Tema disimpan pada tabel `settings` existing. Key mengikuti `theme_{nama_token_dengan_underscore}_color`, misalnya `theme_primary_color` dan `theme_footer_cta_bg_color`. Tidak ada tabel, migration, library, atau salinan logo baru.
@@ -8,7 +10,7 @@ Tema disimpan pada tabel `settings` existing. Key mengikuti `theme_{nama_token_d
 
 Shared `public/layout.blade.php` menginjeksi variabel CSS tervalidasi pada `<body class="public-body public-app">`. Alias CSS existing sekarang scoped pada `.public-app`, bukan `:root`. Admin tetap menggunakan `admin-app`, `admin.css`, dan `admin.js`. Preview di settings hanya mempunyai variabel inline pada kontainer contoh; tidak memasang kelas public-app atau memuat public.css ke CMS. `meta[name=theme-color]` mengikuti header background. Canonical, schema, metadata artikel, branding, dan business logic tetap memakai sumber existing.
 
-Default inti berasal dari stylesheet existing. `config/public_theme_shades.php` menyimpan 89 variasi warna existing beserta parent semantiknya. Nilai turunan dihitung dari selisih kanal RGB terhadap default, dibatasi 0–255; saat Classic aktif hasilnya sama persis dengan literal asal, termasuk transparansi. Admin mengatur parent semantik, bukan puluhan setting yang menduplikasi fungsi. Surface kartu, gradasi hero, dan warna teks sekunder tetap mempertahankan variasi desain. Warna turunan ikut berubah saat parent diubah.
+Default inti berasal dari stylesheet existing. `App\Support\PublicThemeDefaults` menyimpan definisi Classic lengkap dan 89 variasi warna beserta parent semantiknya. Kedua file `config/public_theme*.php` merujuk definisi yang sama; service memvalidasi struktur sebelum memakainya. Config hilang/rusak memakai fallback tersebut dan mencatat error terstruktur, tanpa menimpa warna database. Nilai turunan dihitung dari selisih kanal RGB terhadap default, dibatasi 0–255; saat Classic aktif hasilnya sama persis dengan literal asal, termasuk transparansi. Admin mengatur parent semantik, bukan puluhan setting yang menduplikasi fungsi. Surface kartu, gradasi hero, dan warna teks sekunder tetap mempertahankan variasi desain. Warna turunan ikut berubah saat parent diubah.
 
 Perubahan nilai dari CMS berlaku pada request publik berikutnya, tanpa build, optimize:clear, Redis, worker, atau Node.js runtime di hosting. Build hanya diperlukan ketika source CSS/JS berubah saat deploy.
 
@@ -73,7 +75,7 @@ Target AA ditampilkan per pasangan: 4.5:1 untuk teks normal; 3:1 untuk judul bes
 
 ## Seeder dan deploy
 
-`PublicThemeSettingsSeeder` didaftarkan pada DatabaseSeeder dan memakai `Setting::firstOrCreate`. Deploy existing `php artisan migrate --force --seed` hanya menambahkan key yang hilang; warna custom admin tidak ditimpa. Tidak memanggil DemoSeeder, migrate:fresh, atau mengubah `.cpanel.yml`. Pengujian browser memakai database SQLite QA terpisah dan tidak mengubah database aplikasi.
+`PublicThemeSettingsSeeder` didaftarkan pada DatabaseSeeder dan memakai `Setting::firstOrCreate`. Deploy existing `php artisan migrate --force --seed` hanya menambahkan key yang hilang; warna custom admin tidak ditimpa. Tidak memanggil DemoSeeder atau migrate:fresh. `.cpanel.yml` membersihkan config sebelum seeding dan membuat cache kembali setelah migration berhasil. Pengujian browser memakai database SQLite QA terpisah dan tidak mengubah database aplikasi.
 
 ## File source yang berubah
 

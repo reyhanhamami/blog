@@ -42,7 +42,8 @@ class PublicThemeEditor extends Component
         return view('livewire.public-theme-editor', [
             'defaults' => PublicTheme::defaults(),
             'presets' => PublicTheme::presets(),
-            'groups' => config('public_theme.groups'),
+            'groups' => PublicTheme::groups(),
+            'shades' => PublicTheme::shades(),
         ]);
     }
 }

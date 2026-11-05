@@ -11,14 +11,97 @@ class PublicTheme
 {
     public const CACHE_KEY = 'public:theme';
 
+    public static function groups(): array
+    {
+        $groups = config('public_theme.groups');
+        $problem = self::groupsProblem($groups);
+        if ($problem !== null) {
+            self::configurationError('public_theme.groups', $problem);
+            $groups = PublicThemeDefaults::GROUPS;
+            // Repair this request's repository only, avoiding repeated error logs.
+            // The cached config file and persisted theme settings are never changed.
+            config(['public_theme.groups' => $groups]);
+        }
+
+        return $groups;
+    }
+
+    private static function groupsProblem(mixed $groups): ?string
+    {
+        if (! is_array($groups) || $groups === []) {
+            return 'Expected a non-empty array of theme groups.';
+        }
+        $required = array_merge(...array_values(PublicThemeDefaults::GROUPS));
+        $seen = [];
+        foreach ($groups as $label => $fields) {
+            if (! is_string($label) || trim($label) === '' || ! is_array($fields) || $fields === []) {
+                return 'Every group must have a name and a non-empty field array.';
+            }
+            foreach ($fields as $token => $field) {
+                if (! is_string($token) || ! array_key_exists($token, $required) || isset($seen[$token])) {
+                    return 'Theme tokens must be known and unique across groups.';
+                }
+                if (! is_array($field) || ! array_is_list($field) || count($field) !== 3
+                    || ! is_string($field[0]) || trim($field[0]) === ''
+                    || ! self::valid($field[1]) || ! is_string($field[2]) || trim($field[2]) === '') {
+                    return 'Every field must contain a label, a six-digit HEX default, and help text.';
+                }
+                $seen[$token] = true;
+            }
+        }
+
+        return count($seen) === count($required) ? null : 'Required public theme tokens are missing.';
+    }
+
+    public static function shades(): array
+    {
+        $shades = config('public_theme_shades');
+        $problem = self::shadesProblem($shades);
+        if ($problem !== null) {
+            self::configurationError('public_theme_shades', $problem);
+            $shades = PublicThemeDefaults::SHADES;
+            config(['public_theme_shades' => $shades]);
+        }
+
+        return $shades;
+    }
+
+    private static function shadesProblem(mixed $shades): ?string
+    {
+        if (! is_array($shades) || $shades === []) {
+            return 'Expected a non-empty array of audited theme shades.';
+        }
+        $fields = self::fields();
+        foreach ($shades as $name => $shade) {
+            if (! is_string($name) || ! array_key_exists($name, PublicThemeDefaults::SHADES)
+                || ! is_array($shade) || ! array_is_list($shade) || count($shade) !== 2
+                || ! is_string($shade[0]) || ! array_key_exists($shade[0], $fields)
+                || ! is_string($shade[1]) || preg_match('/\A#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?\z/', $shade[1]) !== 1) {
+                return 'Every audited shade must have a known name, parent token, and HEX color.';
+            }
+        }
+
+        return count($shades) === count(PublicThemeDefaults::SHADES) ? null : 'Required public theme shades are missing.';
+    }
+
+    private static function configurationError(string $key, string $reason): void
+    {
+        Log::error('Invalid public theme configuration; using bundled Besofton Classic definitions.', [
+            'config_key' => $key,
+            'reason' => $reason,
+            'configuration_cached' => app()->configurationIsCached(),
+            'action' => 'Verify tracked theme configuration files and rebuild the Laravel configuration cache.',
+        ]);
+    }
+
     public static function fields(): array
     {
-        return array_merge(...array_values(config('public_theme.groups')));
+        return array_merge(...array_values(self::groups()));
     }
 
     public static function defaults(): array
     {
-        return array_map(fn (array $field) => $field[1], self::fields());
+        return array_map(fn (array $field) => strtolower($field[1]), self::fields());
     }
 
     public static function key(string $token): string
@@ -33,9 +116,12 @@ class PublicTheme
 
     public static function resolve(): array
     {
-        return Cache::remember(self::CACHE_KEY, 3600, function () {
-            $saved = Setting::query()->whereIn('key', array_map(self::key(...), array_keys(self::defaults())))->pluck('value', 'key');
-            $colors = self::defaults();
+        // Validate configuration even when the resolved database theme is cached.
+        $defaults = self::defaults();
+
+        return Cache::remember(self::CACHE_KEY, 3600, function () use ($defaults) {
+            $saved = Setting::query()->whereIn('key', array_map(self::key(...), array_keys($defaults)))->pluck('value', 'key');
+            $colors = $defaults;
             foreach ($colors as $token => $default) {
                 $key = self::key($token);
                 if (! $saved->has($key)) {
@@ -95,7 +181,8 @@ class PublicTheme
     public static function style(?array $colors = null): string
     {
         $colors = $colors ?? self::resolve();
-        $safe = self::defaults();
+        $defaults = self::defaults();
+        $safe = $defaults;
         foreach ($safe as $token => $default) {
             $safe[$token] = self::valid($colors[$token] ?? null) ? strtolower($colors[$token]) : $default;
         }
@@ -103,8 +190,8 @@ class PublicTheme
         foreach ($safe as $token => $color) {
             $variables[] = '--public-'.$token.': '.$color;
         }
-        foreach (config('public_theme_shades', []) as $name => [$token, $original]) {
-            $variables[] = '--public-'.$name.': '.self::shade($safe[$token], self::defaults()[$token], $original);
+        foreach (self::shades() as $name => [$token, $original]) {
+            $variables[] = '--public-'.$name.': '.self::shade($safe[$token], $defaults[$token], $original);
         }
 
         return implode('; ', $variables).';';
