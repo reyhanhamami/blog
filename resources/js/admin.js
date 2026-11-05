@@ -1,5 +1,7 @@
 import { initMediaGallery, safeImageUrl, uploadMedia } from './media-library';
 import './app.js';
+import { publicThemeEditor } from './public-theme';
+window.publicThemeEditor = publicThemeEditor;
 import { initCmsShell } from './admin/workspace';
 
 let cmsShell;

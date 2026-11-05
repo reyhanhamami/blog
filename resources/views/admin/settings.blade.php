@@ -3,7 +3,7 @@
 @section('content')
 <h1 class="text-3xl font-bold">Pengaturan</h1>
 <p class="mt-2 text-sm text-slate-500">Identitas, homepage, dan metadata default Besofton Insights.</p>
-<nav class="mt-4 flex flex-wrap gap-4 text-sm text-indigo-700" aria-label="Bagian pengaturan"><a href="#branding">Branding</a><a href="#homepage">Homepage</a><a href="#general">Umum & SEO</a></nav>
+<nav class="mt-4 flex flex-wrap gap-4 text-sm text-indigo-700" aria-label="Bagian pengaturan"><a href="#branding">Branding</a><a href="#homepage">Homepage</a>@can('settings.manage')<a href="#public-theme">Tampilan Website</a>@endcan<a href="#general">Umum & SEO</a></nav>
 
 @can('settings.manage')
 <form action="{{ route('admin.settings.update') }}" method="post" enctype="multipart/form-data" class="mt-6 max-w-4xl space-y-6">
@@ -56,6 +56,7 @@
     <button class="btn-primary">Simpan pengaturan</button>
 </form>
 @include('admin.settings-homepage-picker')
+<livewire:public-theme-editor />
 @else
 <div class="card mt-6 max-w-3xl space-y-4">
     <div><strong class="text-sm">Logo</strong><img src="{{ $logoUrl }}" alt="Logo saat ini" class="mt-2 h-24 max-w-full object-contain"></div>

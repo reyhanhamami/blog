@@ -4,6 +4,7 @@ use App\Models\Page;
 use App\Models\Setting;
 
 $siteName = Setting::valueFor('site_name', 'Besofton Insights');
+$publicTheme = \App\Support\PublicTheme::resolve();
 $logoUrl = \App\Support\Branding::logoUrl();
 $customLogo = (bool) (\App\Support\Branding::uploadedPath('logo_path') || Setting::valueFor('logo_url'));
 $headerLinks = Menu::links('header')->filter(fn ($link) => $link->parent_id === null && $link->url !== '/cari')->values();
@@ -31,6 +32,7 @@ $socialLinks = collect([
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="{{ $publicTheme['header-bg'] }}">
     <title>@yield('seo_title', $siteName.' | Artikel dan tutorial teknologi')</title>
     <meta name="description" content="@yield('seo_description', Setting::valueFor('default_description', 'Artikel dan tutorial teknologi dari Besofton Insights.'))">
     <meta name="robots" content="{{ config('app.env') === 'production' ? trim($__env->yieldContent('robots', 'index,follow')) : 'noindex,nofollow' }}">
@@ -48,7 +50,7 @@ $socialLinks = collect([
     @livewireStyles
     @stack('head')
 </head>
-<body class="public-body">
+<body class="public-body public-app" style="{{ \App\Support\PublicTheme::style($publicTheme) }}">
     <div id="nav-progress" hidden aria-hidden="true"></div>
     @include('public.partials.site-header')
     <main class="public-main @yield('main_class')" wire:transition.navigate>

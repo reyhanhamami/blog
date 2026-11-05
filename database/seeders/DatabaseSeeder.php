@@ -49,5 +49,6 @@ class DatabaseSeeder extends Seeder
         }
         $this->call(HeaderNavigationSeeder::class);
         $this->call(HomepageSettingsSeeder::class);
+        $this->call(PublicThemeSettingsSeeder::class);
     }
 }

@@ -90,6 +90,8 @@ function initPublicPage() {
     }
     if (document.querySelector('.article-content pre code')) {
         import('prismjs').then(async ({ default: Prism }) => {
+            // PHP hooks require markup-templating before highlighting.
+            await import('prismjs/components/prism-markup-templating');
             await Promise.all([
                 import('prismjs/components/prism-markup'), import('prismjs/components/prism-css'),
                 import('prismjs/components/prism-javascript'), import('prismjs/components/prism-typescript'),
