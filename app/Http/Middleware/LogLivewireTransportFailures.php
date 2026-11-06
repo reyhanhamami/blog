@@ -7,15 +7,42 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
+use function Livewire\before;
+
 class LogLivewireTransportFailures
 {
     public function handle(Request $request, Closure $next): Response
     {
         $entryMethod = $request->getRealMethod();
-        $response = $next($request);
+        $isUpdate = $request->hasHeader('X-Livewire')
+            && preg_match('~\Alivewire-[a-f0-9]{8}/update/?\z~', $request->path());
+        $origins = [];
+        // Observe only checksum-verified metadata, before persistent routing can fail.
+        // This listener neither repairs nor alters snapshots or middleware execution.
+        $stop = $isUpdate ? before('snapshot-verified', function (array $snapshot) use (&$origins, $request): void {
+            if (count($origins) >= 10) {
+                return;
+            }
+            $memo = $snapshot['memo'];
+            $path = is_string($memo['path'] ?? null) ? trim($memo['path'], '/') : null;
+            $origins[] = [
+                'component' => ($memo['name'] ?? null) === 'public-theme-editor' ? 'public-theme-editor' : 'other',
+                'origin' => match ($path) {
+                    'admin/settings' => 'settings',
+                    trim($request->path(), '/') => 'update',
+                    default => 'other',
+                },
+                'method' => in_array($memo['method'] ?? null, ['GET', 'POST'], true) ? $memo['method'] : 'other',
+            ];
+        }) : null;
+        try {
+            $response = $next($request);
+        } finally {
+            // Required for long-running workers and repeated HTTP test requests.
+            $stop && $stop();
+        }
 
-        if ($request->hasHeader('X-Livewire')
-            && preg_match('~\Alivewire-[a-f0-9]{8}/update/?\z~', $request->path())
+        if ($isUpdate
             && ($response->getStatusCode() === 405 || $response->isRedirection())) {
             $forwarded = strtolower((string) $request->header('X-Forwarded-Proto', ''));
             $exception = $response->exception ?? null;
@@ -41,6 +68,7 @@ class LogLivewireTransportFailures
                 'internal_redirect_status' => (int) $request->server('REDIRECT_STATUS', 0),
                 'rejected_method' => $rejectedMethod,
                 'routing_frames' => $frames,
+                'verified_origins' => $origins,
                 'path' => $request->path(),
                 'status' => $response->getStatusCode(),
                 'scheme' => $request->getScheme(),

@@ -14,6 +14,7 @@ const page = await context.newPage();
 const publicPage = await context.newPage();
 const errors = [];
 const requests = [];
+const comparisons = [];
 const isUpdate = url => /\/livewire-[a-f0-9]{8}\/update\/?$/.test(new URL(url).pathname);
 for (const tab of [page, publicPage]) {
     tab.on('pageerror', error => errors.push(error.message));
@@ -45,8 +46,17 @@ const listeners = async () => {
     };
     return { unload: await count('window', 'beforeunload'), navigate: await count('document', 'livewire:navigate') };
 };
-const save = async expected => {
+const origin = snapshot => {
+    const memo = JSON.parse(snapshot).memo;
+    assert.equal(memo.name, 'public-theme-editor');
+    assert.equal(memo.path, 'admin/settings');
+    assert.equal(memo.method, 'GET');
+    // Route metadata only; never persist the signed snapshot, id or checksum.
+    return { name: memo.name, path: memo.path, method: memo.method };
+};
+const save = async (expected, preset = 'custom') => {
     const before = requests.length;
+    const beforeOrigin = await page.locator('#public-theme').getAttribute('wire:snapshot').then(origin);
     const responsePromise = page.waitForResponse(response => isUpdate(response.url()));
     await page.getByRole('button', { name: 'Simpan Tema', exact: true }).click();
     const response = await responsePromise;
@@ -54,6 +64,17 @@ const save = async expected => {
     assert.equal(response.status(), 200);
     assert.equal(response.headers().location, undefined);
     assert.equal(response.request().redirectedFrom(), null);
+    const payload = response.request().postDataJSON();
+    assert.equal(payload.components.length, 1, 'one theme component in the request bundle');
+    const component = payload.components[0];
+    assert.deepEqual(origin(component.snapshot), beforeOrigin);
+    assert.deepEqual(component.calls.map(call => call.method), ['save']);
+    const body = await response.json();
+    assert.equal(body.components.length, 1);
+    assert.equal(body.components[0].effects.redirect, undefined);
+    const afterOrigin = origin(body.components[0].snapshot);
+    assert.deepEqual(afterOrigin, beforeOrigin);
+    comparisons.push({ preset, requestCount: 1, action: 'save', updateKeys: Object.keys(component.updates), beforeOrigin, afterOrigin, status: response.status(), redirect: false });
     await page.getByText('Pengaturan tampilan website berhasil diperbarui.', { exact: true }).waitFor();
     await page.waitForLoadState('networkidle');
     assert.equal(requests.length - before, 1, 'one Livewire request per Save');
@@ -74,9 +95,23 @@ try {
     const initialUri = await page.locator('script[data-update-uri]').getAttribute('data-update-uri');
     assert.equal(await page.locator('script[data-update-uri]').count(), 1);
 
-    for (const preset of ['Besofton Classic', 'Modern Blue', 'Forest Green', 'Red White']) {
+    const palettes = await page.locator('#public-theme').evaluate(node => JSON.parse(JSON.stringify(window.Alpine.$data(node).presets)));
+    assert.equal(Object.keys(palettes['Red White']).length, 26);
+    for (const palette of Object.values(palettes)) {
+        assert.deepEqual(Object.keys(palette).sort(), Object.keys(palettes['Besofton Classic']).sort());
+        assert.ok(Object.values(palette).every(color => /^#[a-f0-9]{6}$/i.test(color)));
+    }
+    for (const preset of ['Besofton Classic', 'Forest Green', 'Modern Blue', 'Red White', 'Besofton Classic', 'Red White', 'Red White']) {
+        const beforeSelection = requests.length;
         await page.locator('#public-theme-preset').selectOption(preset);
-        await save(await page.locator('#theme-primary').inputValue());
+        await page.waitForTimeout(200);
+        assert.equal(requests.length, beforeSelection, 'preset selection is deferred; no automatic property request');
+        await save(palettes[preset].primary, preset);
+        await page.reload();
+        await ready();
+        for (const [token, color] of Object.entries(palettes[preset])) {
+            assert.equal(await page.locator('#theme-' + token).inputValue(), color, preset + ' reload ' + token);
+        }
     }
     await page.locator('#theme-primary').fill('#b71c1c');
     await save('#b71c1c');
@@ -95,6 +130,8 @@ try {
         await Promise.all([page.waitForURL('**/admin/settings'), page.locator(`a.cms-nav[href="${baseURL}/admin/settings"]`).click()]);
         await ready();
         assert.deepEqual(await listeners(), baselineListeners, 'listener count stable after wire:navigate');
+        await page.locator('#public-theme-preset').selectOption('Red White');
+        await save(palettes['Red White'].primary, 'Red White after history');
         const color = ['#b71c1c', '#aa2020', '#a91d1d'][index];
         await page.locator('#theme-primary').fill(color);
         await save(color);
@@ -150,7 +187,7 @@ try {
 
     assert.ok(requests.every(request => request.method === 'POST' && !request.redirected));
     assert.deepEqual(errors, []);
-    await writeFile(`${out}/${browserName}-results.json`, JSON.stringify({ server, browser: browserName, saveRequests: requests.filter(r => r.saveCalls > 0).length, requests, listenerBaseline: baselineListeners, listenerFinal: await listeners(), csrfStatus: 419, guestStatus: 401, forbiddenStatus: 403, canonicalPost: 200, trailingSlashPost: 200, unsupportedGet: 405, regularSettings: 'PATCH form with normal 302 PRG', errors }, null, 2));
+    await writeFile(`${out}/${browserName}-results.json`, JSON.stringify({ server, browser: browserName, saveRequests: requests.filter(r => r.saveCalls > 0).length, requests, comparisons, listenerBaseline: baselineListeners, listenerFinal: await listeners(), csrfStatus: 419, guestStatus: 401, forbiddenStatus: 403, canonicalPost: 200, trailingSlashPost: 200, unsupportedGet: 405, regularSettings: 'PATCH form with normal 302 PRG', errors }, null, 2));
     console.log(`${browserName}: real Apache Livewire POST/save, Back/Forward, listener cleanup, CSRF, guest rejection, public refresh and trailing slash passed.`);
 } catch (error) {
     await page.screenshot({ path: `${out}/${browserName}-failure.png` }).catch(() => {});

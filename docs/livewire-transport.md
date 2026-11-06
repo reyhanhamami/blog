@@ -2,6 +2,8 @@
 
 Status production: **NOT VERIFIED**. Tidak ada deploy production, perubahan APP_KEY, atau penyimpanan tema pada production selama audit ini.
 
+Audit lanjutan untuk laporan bahwa hanya Red White gagal tersedia di [perbandingan preset dan snapshot](red-white-livewire-audit.md). Dua POST production (200 lalu 405) belum dapat direproduksi; jangan menganggap trailing-slash sebagai akar masalah kasus tersebut.
+
 ## Temuan yang benar-benar dibuktikan
 
 Audit repository memakai Laravel 13.9.0 dan Livewire 4.3.0 dari composer.lock. Tidak ditemukan override `setUpdateRoute`, hardcoded hash endpoint, route GET untuk update, forceScheme/forceRootUrl, wildcard trusted proxy, fetch interceptor, atau inisialisasi Livewire/Alpine ganda. Entry point `public/index.php` tidak mengganti REQUEST_METHOD. Root `.htaccess` tidak ada dalam repository; file aktif yang diaudit adalah `public/.htaccess`.
@@ -49,6 +51,7 @@ Metadata log `Livewire transport failure.`:
 - `method`, `server_method`: method Laravel dan server setelah pemrosesan;
 - `rejected_method`: method yang disebut exception 405, jika tersedia;
 - `routing_frames`: maksimal lima nama file/class/function routing, tanpa argumen atau path penuh;
+- `verified_origins`: maksimal sepuluh kategori komponen/origin/method dari snapshot setelah checksum lolos; origin hanya settings/update/other, tanpa snapshot mentah. Listener dilepas pada akhir request;
 - `internal_redirect_status`: REDIRECT_STATUS Apache bila ada;
 - path update, status, scheme, ringkasan forwarded proto, apakah proxy dipercaya, dan boolean Location.
 
@@ -79,7 +82,7 @@ Browser Chromium menggunakan Apache 2.4.58 native Windows dan PHP 8.3 dengan `.h
 
 Hasil browser:
 
-- Delapan klik Save sukses: empat preset dan empat save warna custom/riwayat navigasi. Setiap klik mengirim tepat satu request POST dengan satu call save; tidak ada redirect atau navigasi halaman ke update URI.
+- Empat belas klik Save sukses: keempat preset, Red White berulang, serta warna custom/riwayat navigasi. Setiap klik mengirim tepat satu request POST dengan satu call save; tidak ada redirect atau navigasi halaman ke update URI. Memilih preset tidak mengirim request otomatis; memo tetap admin/settings/GET sebelum dan setelah Save, dan semua 26 input sesuai setelah reload.
 - Reload Settings dan homepage membaca warna terbaru.
 - Tiga siklus wire:navigate/Back/Forward tetap dapat menyimpan; jumlah listener stabil (beforeunload 2, livewire:navigate 4).
 - Satu script Livewire, URI/hash tetap sama selama pengujian.
@@ -99,8 +102,8 @@ Hasil verifikasi akhir:
 | php artisan optimize:clear | Berhasil |
 | php artisan route:list | 191 route termasuk vendor; tidak ada route GET update baru |
 | php artisan route:list --path=livewire -v | 9 route Livewire; satu route update POST dengan web/header guard |
-| php artisan test --compact --no-ansi | 246 test lulus, 2.234 assertion |
-| Regression HTTP transport baru | 12 test lulus, 73 assertion |
+| php artisan test --compact --no-ansi | 248 test lulus, 2.550 assertion |
+| Regression HTTP transport | 14 test lulus, 389 assertion |
 | composer validate | composer.json valid |
 | php vendor/bin/pint --test --quiet | Lulus |
 | npm.cmd run build | Berhasil, 165 modul; bundle/manifest tidak berubah |

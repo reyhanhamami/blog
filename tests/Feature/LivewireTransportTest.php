@@ -67,6 +67,49 @@ test('HTTP invalid HEX does not partially update theme or redirect', function ()
     expect(Setting::query()->where('key', 'like', 'theme_%')->count())->toBe(0);
 });
 
+test('preset property sync followed by save preserves the signed settings origin across repeated HTTP requests', function () {
+    $html = $this->actingAs(User::factory()->create(['role' => 'superadmin']))->get('/admin/settings')->assertOk()->getContent();
+    $component = themeTransportPayload($html)['components'][0];
+    $original = json_decode($component['snapshot'], true)['memo'];
+    $presets = PublicTheme::presets();
+    $uri = app('livewire')->getUpdateUri();
+
+    foreach (['Besofton Classic', 'Forest Green', 'Modern Blue', 'Red White', 'Besofton Classic', 'Red White', 'Red White'] as $preset) {
+        $before = Setting::query()->where('key', 'like', 'theme_%')->pluck('value', 'key')->all();
+        // Exercise the two-request case too: property synchronization is not Save.
+        $component['updates'] = ['colors' => $presets[$preset]];
+        $component['calls'] = [];
+        $sync = $this->postJson($uri, ['components' => [$component]], ['X-Livewire' => '1', 'Accept' => '*/*']);
+        $sync->assertOk()->assertHeaderMissing('Location');
+        expect($sync->json('components.0.effects'))->not->toHaveKey('redirect');
+        expect(Setting::query()->where('key', 'like', 'theme_%')->pluck('value', 'key')->all())->toBe($before);
+
+        $component['snapshot'] = $sync->json('components.0.snapshot');
+        $component['updates'] = [];
+        $component['calls'] = [['path' => '', 'method' => 'save', 'params' => []]];
+        $save = $this->postJson($uri, ['components' => [$component]], ['X-Livewire' => '1', 'Accept' => '*/*']);
+        $save->assertOk()->assertHeaderMissing('Location');
+        $effects = $save->json('components.0.effects');
+        expect($effects)->not->toHaveKey('redirect');
+        expect(array_column($effects['dispatches'], 'name'))->toBe(['public-theme-saved']);
+        foreach ([$sync, $save] as $response) {
+            $memo = json_decode($response->json('components.0.snapshot'), true)['memo'];
+            expect(array_intersect_key($memo, array_flip(['id', 'name', 'path', 'method'])))
+                ->toBe(array_intersect_key($original, array_flip(['id', 'name', 'path', 'method'])));
+            expect($memo['path'])->toBe('admin/settings');
+            expect($memo['method'])->toBe('GET');
+            expect($memo['errors'])->toBe([]);
+        }
+        foreach ($presets[$preset] as $token => $color) {
+            expect(Setting::query()->whereKey(PublicTheme::key($token))->value('value'))->toBe($color);
+        }
+        PublicTheme::forget();
+        expect(PublicTheme::resolve())->toBe($presets[$preset]);
+        expect(PublicTheme::presets())->toBe($presets);
+        $component['snapshot'] = $save->json('components.0.snapshot');
+    }
+});
+
 test('expired authentication rejects a signed admin snapshot with JSON 401 and no redirect', function () {
     $html = $this->actingAs(User::factory()->create(['role' => 'superadmin']))->get('/admin/settings')->getContent();
     $payload = themeTransportPayload($html, ['colors.primary' => '#123456']);
@@ -100,7 +143,8 @@ test('405 diagnostics contain only transport metadata and do not expose request 
 
         return $message === 'Livewire transport failure.'
             && $context['method'] === 'GET' && $context['server_method'] === 'GET' && $context['status'] === 405
-            && ! str_contains($serialized, 'sensitive') && count($context) === 12;
+            && ! str_contains($serialized, 'sensitive') && count($context) === 13
+            && $context['verified_origins'] === [];
     });
 });
 
@@ -123,4 +167,28 @@ test('diagnostics distinguish an incoming POST from an internal GET route reject
         && $context['rejected_method'] === 'GET' && count($context['routing_frames']) <= 5
         && ! str_contains(json_encode($context), 'sensitive-payload')
     );
+});
+
+test('failed internal routing logs only verified origin categories and preserves the original HTTP POST', function () {
+    $html = $this->actingAs(User::factory()->create(['role' => 'superadmin']))->get('/admin/settings')->assertOk()->getContent();
+    $payload = themeTransportPayload($html, ['colors' => PublicTheme::presets()['Red White']]);
+    Log::spy();
+    // Inject a routing failure after verification; do not edit or re-sign snapshots.
+    $stop = \Livewire\after('snapshot-verified', function (): void {
+        throw new MethodNotAllowedHttpException(['POST'], 'The GET method is not supported for this route.');
+    });
+    try {
+        $this->postJson(app('livewire')->getUpdateUri(), $payload, ['X-Livewire' => '1', 'Accept' => '*/*'])
+            ->assertStatus(405)->assertHeaderMissing('Location');
+    } finally {
+        $stop();
+    }
+    expect(Setting::query()->where('key', 'like', 'theme_%')->count())->toBe(0);
+    Log::shouldHaveReceived('warning')->once()->withArgs(fn ($message, $context) => $context['entry_method'] === 'POST'
+        && $context['server_method'] === 'POST' && $context['rejected_method'] === 'GET'
+        && $context['verified_origins'] === [['component' => 'public-theme-editor', 'origin' => 'settings', 'method' => 'GET']]
+        && ! str_contains(json_encode($context), 'checksum')
+    );
+    $this->postJson(app('livewire')->getUpdateUri(), $payload, ['X-Livewire' => '1', 'Accept' => '*/*'])->assertOk();
+    expect(PublicTheme::resolve())->toBe(PublicTheme::presets()['Red White']);
 });
