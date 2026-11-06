@@ -13,7 +13,9 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # Canonicalize page URLs only. A 301 can turn POST into GET and drop its body.
+    # Action requests must reach Laravel directly, including Livewire updates.
+    RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]

@@ -31,3 +31,5 @@
 Alur ini didukung oleh [panduan deployment Git cPanel](https://docs.cpanel.net/knowledge-base/web-services/guide-to-git-deployment/). Tidak membutuhkan endpoint maintenance publik atau Terminal cPanel. Jangan unggah `.env` development, secret, atau `bootstrap/cache/config.php` lokal ke repository/production. File cache harus dibuat oleh task deployment menggunakan environment hosting.
 
 Jika tema jatuh ke fallback Classic, periksa log `Invalid public theme configuration` dan pastikan commit serta source aplikasi berisi file konfigurasi/default yang lengkap. Lihat [catatan perbaikan konfigurasi tema](public-theme-configuration-fix.md). Mengedit warna dari CMS tetap tidak membutuhkan perintah cache/build manual.
+
+Untuk error Livewire update, lihat [audit transport HTTP 405](livewire-transport.md). Pastikan `APP_DEBUG=false` pada production dan pertahankan APP_KEY existing. Update deployment tidak boleh menjalankan key:generate. `.htaccess` mengarahkan canonical redirect halaman hanya untuk GET/HEAD agar POST Livewire tidak berubah menjadi GET.
