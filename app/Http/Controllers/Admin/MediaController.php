@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Models\Post;
+use App\Support\PublicImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
@@ -56,7 +57,7 @@ class MediaController extends Controller
         $file->move(public_path($folder), $filename);
         $path = $folder.'/'.$filename;
         try {
-            app(\App\Support\PublicImage::class)->optimize(public_path($path));
+            app(PublicImage::class)->optimize(public_path($path));
         } catch (\Throwable $exception) {
             report($exception); // Derivatives are optional; keep a successful original upload.
         }

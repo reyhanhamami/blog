@@ -213,7 +213,9 @@ test('settings use one bulk query and invalidate edits deletes and caller defaul
 });
 
 test('image variants preserve originals aspect ratio and alpha with safe fallbacks', function () {
-    if (! function_exists('imagewebp')) $this->markTestSkipped('GD WebP unavailable');
+    if (! function_exists('imagewebp')) {
+        $this->markTestSkipped('GD WebP unavailable');
+    }
     $relative = 'uploads/seo-test-'.bin2hex(random_bytes(8)).'.png';
     $path = public_path($relative);
     File::ensureDirectoryExists(dirname($path));
@@ -239,7 +241,9 @@ test('image variants preserve originals aspect ratio and alpha with safe fallbac
         expect((string) PublicImage::sources('/'.$relative, '100vw'))->toContain('srcset=', '320w');
         expect((string) PublicImage::sources('https://other.example/image.jpg', '100vw'))->toBe('src="https://other.example/image.jpg"');
     } finally {
-        foreach (PublicImage::WIDTHS as $width) File::delete(public_path(PublicImage::variant($path, $width)));
+        foreach (PublicImage::WIDTHS as $width) {
+            File::delete(public_path(PublicImage::variant($path, $width)));
+        }
         File::delete($path);
     }
 });

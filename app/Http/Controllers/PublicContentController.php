@@ -15,8 +15,8 @@ use App\Models\Video;
 use App\Services\ArticleNavigation;
 use App\Services\ContentDiscoveryService;
 use App\Services\HomepageContentService;
-use App\Services\QuizGrader;
 use App\Services\PublicSitemap;
+use App\Services\QuizGrader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

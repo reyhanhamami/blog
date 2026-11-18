@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\HtmlString;
 
 class PublicImage
@@ -83,7 +84,9 @@ class PublicImage
         }
         $limit = ini_get('memory_limit');
         if ($limit !== '-1') {
-            $bytes = (int) $limit * match (strtolower(substr($limit, -1))) {'g' => 1024 ** 3, 'm' => 1024 ** 2, 'k' => 1024, default => 1};
+            $bytes = (int) $limit * match (strtolower(substr($limit, -1))) {
+                'g' => 1024 ** 3, 'm' => 1024 ** 2, 'k' => 1024, default => 1
+            };
             if (memory_get_usage(true) + $dimensions[0] * $dimensions[1] * 12 + 16 * 1024 ** 2 > $bytes) {
                 return 0;
             }
@@ -109,7 +112,7 @@ class PublicImage
                 imagesavealpha($image, true);
                 imagecopyresampled($image, $source, 0, 0, 0, 0, $width, $height, $dimensions[0], $dimensions[1]);
                 if (! is_dir(dirname($destination))) {
-                    \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($destination));
+                    File::ensureDirectoryExists(dirname($destination));
                 }
                 $temporary = tempnam(dirname($destination), 'webp-');
                 try {

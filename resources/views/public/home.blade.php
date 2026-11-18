@@ -55,17 +55,17 @@
 @endif
 
 @if($featuredPosts->isNotEmpty())
-<section class="home-featured home-container" aria-labelledby="featured-title">
+<section class="home-featured home-container" data-featured-carousel role="region" aria-roledescription="carousel" aria-labelledby="featured-title">
     <h2 id="featured-title" class="sr-only">Artikel Unggulan</h2>
     <div class="featured-slider" data-featured-swiper>
         <div class="swiper-wrapper">
             @foreach($featuredPosts as $post)
-                <div class="swiper-slide">@include('public.partials.home-featured', ['post' => $post, 'defaultImage' => $defaultImage])</div>
+                <div class="swiper-slide" role="group" aria-roledescription="slide" aria-label="{{ $loop->iteration }} dari {{ $featuredPosts->count() }}">@include('public.partials.home-featured', ['post' => $post, 'defaultImage' => $defaultImage, 'firstFeatured' => $loop->first])</div>
             @endforeach
         </div>
     </div>
     @if($featuredPosts->count() > 1)
-    <div class="featured-controls"><button type="button" data-featured-prev aria-label="Artikel unggulan sebelumnya">←</button><button type="button" data-featured-next aria-label="Artikel unggulan berikutnya">→</button></div>
+    <div class="featured-controls"><button type="button" data-featured-toggle aria-label="Jeda pergantian artikel otomatis" aria-pressed="false" hidden><span aria-hidden="true">Ⅱ</span></button><button type="button" data-featured-prev aria-label="Artikel unggulan sebelumnya">←</button><button type="button" data-featured-next aria-label="Artikel unggulan berikutnya">→</button></div>
     @endif
 </section>
 @endif

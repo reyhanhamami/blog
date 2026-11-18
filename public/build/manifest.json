@@ -105,7 +105,7 @@
     ]
   },
   "resources/css/public.css": {
-    "file": "assets/public-D_L2QTkp.css",
+    "file": "assets/public-BUC2XF6e.css",
     "src": "resources/css/public.css",
     "isEntry": true,
     "name": "public",
@@ -212,10 +212,13 @@
     ]
   },
   "resources/js/public-home.js": {
-    "file": "assets/public-home-C8ZRAM72.js",
+    "file": "assets/public-home-B44D_USV.js",
     "name": "public-home",
     "src": "resources/js/public-home.js",
-    "isEntry": true
+    "isEntry": true,
+    "css": [
+      "assets/public-home-C2J0D0kV.css"
+    ]
   },
   "resources/js/public.js": {
     "file": "assets/public-BjSI92NZ.js",

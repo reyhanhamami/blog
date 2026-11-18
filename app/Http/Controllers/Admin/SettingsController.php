@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Support\Branding;
 use App\Support\HomeHeroSettings;
+use App\Support\PublicImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -85,7 +86,7 @@ class SettingsController extends Controller
                 $newPaths[$kind] = 'uploads/branding/'.$filename;
                 if ($kind === 'logo') {
                     try {
-                        app(\App\Support\PublicImage::class)->optimize(public_path($newPaths[$kind]));
+                        app(PublicImage::class)->optimize(public_path($newPaths[$kind]));
                     } catch (\Throwable $exception) {
                         report($exception);
                     }
