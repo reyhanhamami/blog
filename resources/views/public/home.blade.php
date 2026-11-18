@@ -29,7 +29,7 @@
             <div class="collage-paper"></div>
             <div class="collage-photo">
                 @if($hero['image_url'])
-                    <img src="{{ $hero['image_url'] }}" alt="{{ $hero['image_alt'] }}" width="1000" height="680" loading="eager" fetchpriority="high">
+                    <img {{ \App\Support\PublicImage::sources($hero['image_url'], '(max-width: 767px) 90vw, 55vw') }} alt="{{ $hero['image_alt'] }}" {{ \App\Support\PublicImage::dimensions($hero['image_url'], 1000, 680) }} loading="eager" fetchpriority="high">
                 @else
                     <div class="collage-photo-fallback"><span>BESOFTON</span><strong>Build<br>Grow<br><em>Together.</em></strong></div>
                 @endif

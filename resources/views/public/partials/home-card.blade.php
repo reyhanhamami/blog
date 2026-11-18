@@ -2,7 +2,7 @@
 <article class="home-article-card">
     <div class="home-card-image">
         @if($image)
-            <img src="{{ $image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" width="640" height="360" loading="lazy">
+            <img {{ \App\Support\PublicImage::sources($image, '(max-width: 767px) 100vw, 60vw') }} alt="{{ $post->featured_image_alt ?: $post->title }}" width="640" height="360" loading="lazy">
         @else
             <div class="public-image-fallback home-card-fallback" aria-hidden="true"><span>BESOFTON<br>INSIGHTS<span class="fallback-dot">.</span></span></div>
         @endif

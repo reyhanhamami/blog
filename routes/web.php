@@ -199,6 +199,7 @@ Route::get('/kelas', [PublicContentController::class, 'courses'])->name('courses
 Route::get('/kelas/{course:slug}', [PublicContentController::class, 'course'])->name('course.show');
 Route::get('/kelas/{course:slug}/pelajaran/{lesson}', [ReaderController::class, 'lesson'])->name('course.lesson');
 Route::get('/sitemap.xml', [PublicContentController::class, 'sitemap'])->name('sitemap');
+Route::get('/sitemaps/{kind}/{page}.xml', [PublicContentController::class, 'sitemapPart'])->where('page', '[1-9][0-9]*')->name('sitemap.part');
 Route::get('/feed.xml', [PublicContentController::class, 'feed'])->name('feed');
 Route::get('/robots.txt', [PublicContentController::class, 'robots'])->name('robots');
 Route::post('/artikel/{post}/pertanyaan', [QuestionController::class, 'store'])->middleware('throttle:5,1')->name('post.question');

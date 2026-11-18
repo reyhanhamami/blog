@@ -9,6 +9,7 @@ use App\Support\PermissionCatalog;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->environment('production')) {
             Vite::useHotFile(storage_path('framework/vite-production-disabled.hot'));
+            // Use the configured public origin, including behind a TLS-terminating proxy.
+            URL::forceRootUrl(config('app.url'));
+            URL::forceScheme('https');
         }
         Schema::defaultStringLength(191);
         Gate::policy(Post::class, PostPolicy::class);

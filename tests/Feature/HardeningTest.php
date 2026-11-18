@@ -67,7 +67,7 @@ test('article form persists all critical fields and renders server HTML after pu
     expect($html)->toContain('<h1', 'Isi utama.', 'language-php', 'data-youtube="abcdefghijk"', 'Dokumentasi resmi', 'Poin satu', 'Dina');
     expect(substr_count($html, '<link rel="canonical"'))->toBe(1);
     expect(preg_match_all('/<h1\b/', $html))->toBe(1);
-    expect($html)->toContain('<title>Judul SEO QA | Besofton Insights</title>', 'property="og:image" content="https://example.test/og.jpg"');
+    expect($html)->toContain('<title>Judul SEO QA</title>', 'property="og:image" content="https://example.test/og.jpg"');
     preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $matches);
     $schemas = array_map(fn ($json) => json_decode($json, true, 512, JSON_THROW_ON_ERROR), $matches[1]);
     $article = collect($schemas)->firstWhere('@type', 'Article');
@@ -198,9 +198,11 @@ test('author and video pages emit valid matching structured data', function () {
     $html = $this->get(route('video.show', $video))->assertOk()->getContent();
     preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $matches);
     $schemas = array_map(fn ($json) => json_decode($json, true, 512, JSON_THROW_ON_ERROR), $matches[1]);
-    $schema = collect($schemas)->firstWhere('@type', 'VideoObject');
+    $schema = collect($schemas)->firstWhere('@type', 'WebPage');
     expect($schema['name'])->toBe('Tutorial Video');
-    expect($schema['embedUrl'])->toContain('abcdefghijk');
+    expect($schema['primaryImageOfPage'])->toContain('abcdefghijk');
+    expect($schema['datePublished'])->toBe($video->published_at->toAtomString());
+    expect($schema)->not->toHaveKey('uploadDate');
 });
 
 test('public search type filters show only matching content types', function () {

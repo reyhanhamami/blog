@@ -83,7 +83,8 @@ export function analyzeArticle(state, facts = extractContentFacts(state.content,
     const add = (id, group, status, title, message, target = '', priority = 0) => results.push({ id, group, status, title, message, target, priority });
     const phrase = normal(state.focusKeyphrase);
     const title = (state.seoTitle?.trim() || state.title?.trim() || '');
-    const renderedTitle = title ? (title.endsWith(' | Besofton Insights') ? title : `${title} | Besofton Insights`) : '';
+    const useExactTitle = Boolean(state.seoTitle?.trim()) || title.endsWith(' | Besofton Insights');
+    const renderedTitle = title ? (useExactTitle ? title : `${title} | Besofton Insights`) : '';
     const description = resolvedDescription(state, facts);
     const titleLength = [...renderedTitle].length;
     const descriptionLength = [...description].length;
@@ -92,7 +93,7 @@ export function analyzeArticle(state, facts = extractContentFacts(state.content,
 
     if (indexable) {
         add('seo.title', 'seo', title ? 'good' : 'problem', 'Judul hasil pencarian', title ? (state.seoTitle ? 'Judul SEO khusus tersedia.' : 'Judul artikel digunakan sebagai fallback SEO.') : 'Isi judul artikel agar halaman punya judul.', 'seo_title', 3);
-        if (title) add('seo.title_length', 'seo', titleLength >= 30 && titleLength <= 60 ? 'good' : 'improvement', 'Panjang judul SEO', `${titleLength} karakter termasuk nama situs; kisaran 30–60 karakter hanya panduan.`, 'seo_title');
+        if (title) add('seo.title_length', 'seo', titleLength >= 30 && titleLength <= 60 ? 'good' : 'improvement', 'Panjang judul SEO', `${titleLength} karakter pada judul yang dirender; kisaran 30–60 karakter hanya panduan.`, 'seo_title');
         add('seo.description', 'seo', description ? 'good' : 'problem', 'Deskripsi hasil pencarian', state.seoDescription ? 'Deskripsi SEO khusus tersedia.' : description ? 'Halaman publik memakai ringkasan, isi artikel, atau judul sebagai fallback.' : 'Tambahkan deskripsi SEO atau ringkasan.', 'seo_description', 3);
         if (description) add('seo.description_length', 'seo', descriptionLength >= 120 && descriptionLength <= 160 ? 'good' : 'improvement', 'Panjang deskripsi', `${descriptionLength} karakter; kisaran 120–160 karakter hanya panduan.`, 'seo_description');
         add('seo.slug', 'seo', !slug ? 'problem' : slug.length > 75 || /--/.test(slug) ? 'improvement' : 'good', 'Slug artikel', !slug ? 'Isi judul atau slug artikel.' : slug.length > 75 ? 'Slug cukup panjang. Pertimbangkan versi yang lebih ringkas.' : 'Slug tersedia dan mudah dibaca.', 'slug');

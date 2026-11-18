@@ -1,7 +1,7 @@
 <header class="public-site-header" x-data="{ open: false }" @keydown.escape.window="open = false" x-effect="document.body.style.overflow = open ? 'hidden' : ''">
     <div class="public-header-inner">
         <a wire:navigate href="{{ route('home') }}" class="public-brand{{ $customLogo ? ' public-brand-custom' : '' }}" aria-label="Besofton Insights, beranda">
-            <span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : 'public-brand-mark-default' }}"><img src="{{ $logoUrl }}" alt="Besofton"></span>
+            <span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : 'public-brand-mark-default' }}"><img {{ \App\Support\PublicImage::sources($logoUrl, '120px', 320) }} alt="Besofton" {{ \App\Support\PublicImage::dimensions($logoUrl) }}></span>
             @unless($customLogo)<span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span>@endunless
         </a>
         <nav class="public-desktop-nav" aria-label="Navigasi utama">

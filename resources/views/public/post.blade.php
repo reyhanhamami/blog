@@ -1,18 +1,24 @@
 @extends('public.layout')
 @php
-$articleSeoTitle = $post->seo_title ?: $post->title;
+$hasCustomSeoTitle = trim($post->seo_title ?? '') !== '';
+$articleSeoTitle = $hasCustomSeoTitle ? trim($post->seo_title) : trim($post->title);
 $articleDescription = $post->seo_description ?: $post->excerpt ?: \Illuminate\Support\Str::limit($post->content_plain ?: strip_tags($post->content ?? '') ?: $post->title, 155);
 @endphp
-@section('seo_title', \Illuminate\Support\Str::endsWith($articleSeoTitle, ' | Besofton Insights') ? $articleSeoTitle : $articleSeoTitle.' | Besofton Insights')
+@section('seo_title', $hasCustomSeoTitle ? $articleSeoTitle : (\Illuminate\Support\Str::endsWith($articleSeoTitle, ' | Besofton Insights') ? $articleSeoTitle : $articleSeoTitle.' | Besofton Insights'))
 @section('seo_description', $articleDescription)
 @section('canonical', url('/'.$post->slug))
 @section('robots', ($preview || $post->noindex) ? 'noindex,nofollow' : 'index,follow')
 @section('og_type', 'article')
 @section('og_title', $post->og_title ?: $post->seo_title ?: $post->title)
-@section('og_description', $post->og_description ?: $post->seo_description ?: $post->excerpt ?: '')
+@section('og_description', $post->og_description ?: $articleDescription)
 @section('og_image', $post->og_image ?: $post->featured_image ?: '')
 @push('head')
-@php $crumbs = [['@type'=>'ListItem','position'=>1,'name'=>'Beranda','item'=>route('home')], ['@type'=>'ListItem','position'=>2,'name'=>$post->title,'item'=>url('/'.$post->slug)]]; $breadcrumbSchema = ['@context'=>'https://schema.org','@type'=>'BreadcrumbList','itemListElement'=>$crumbs]; @endphp
+@php
+$crumbs = [['@type'=>'ListItem','position'=>1,'name'=>'Beranda','item'=>route('home')]];
+if ($post->category?->is_active) $crumbs[] = ['@type'=>'ListItem','position'=>2,'name'=>$post->category->name,'item'=>route('category.show', $post->category)];
+$crumbs[] = ['@type'=>'ListItem','position'=>count($crumbs) + 1,'name'=>$post->title,'item'=>url('/'.$post->slug)];
+$breadcrumbSchema = ['@context'=>'https://schema.org','@type'=>'BreadcrumbList','itemListElement'=>$crumbs];
+@endphp
 <script type="application/ld+json">{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
 @php
 $schema = [
@@ -27,15 +33,16 @@ $schema = [
     'mainEntityOfPage' => url('/'.$post->slug),
 ];
 if ($post->featured_image) {
-    $schema['image'] = $post->featured_image;
+    $schema['image'] = \App\Support\PublicSeo::image($post->featured_image);
 }
+if ($post->author) $schema['author']['url'] = route('author.show', $post->author);
 @endphp
 <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
 @endpush
 @section('content')
 <div class="public-shell">
     @if($preview)<div class="public-notice" role="status">Preview privat · halaman ini tidak diindeks.</div>@endif
-    <nav aria-label="Breadcrumb" class="public-breadcrumb"><a wire:navigate href="{{ route('home') }}">Beranda</a><span>/</span>@if($post->category)<a wire:navigate href="{{ route('category.show', $post->category) }}">{{ $post->category->name }}</a><span>/</span>@endif<span aria-current="page">{{ $post->title }}</span></nav>
+    <nav aria-label="Breadcrumb" class="public-breadcrumb"><a wire:navigate href="{{ route('home') }}">Beranda</a><span>/</span>@if($post->category?->is_active)<a wire:navigate href="{{ route('category.show', $post->category) }}">{{ $post->category->name }}</a><span>/</span>@endif<span aria-current="page">{{ $post->title }}</span></nav>
     <div id="reading-progress" aria-hidden="true"></div>
     <article data-reading-article>
         <header class="article-hero">
@@ -48,7 +55,7 @@ if ($post->featured_image) {
             </div>
             <div class="article-actions"><a href="https://wa.me/?text={{ urlencode($post->title.' '.url('/'.$post->slug)) }}" target="_blank" rel="noopener noreferrer" class="public-outline-button">Bagikan ↗</a><button type="button" data-copy="{{ url('/'.$post->slug) }}" class="public-outline-button">Salin tautan</button>@auth<form action="{{ route('reader.bookmark', $post) }}" method="post">@csrf<button type="submit" class="public-outline-button">Simpan / hapus bookmark</button></form>@endauth</div>
         </header>
-        @if($post->featured_image)<figure class="article-featured"><img src="{{ $post->featured_image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" width="1200" height="675" fetchpriority="high"></figure>@endif
+        @if($post->featured_image)<figure class="article-featured"><img {{ \App\Support\PublicImage::sources($post->featured_image, '(max-width: 767px) 100vw, 1200px') }} alt="{{ $post->featured_image_alt ?: $post->title }}" {{ \App\Support\PublicImage::dimensions($post->featured_image, 1200, 675) }} loading="eager" fetchpriority="high"></figure>@endif
         <div class="article-layout">
             <div class="article-main">
                 @if($post->direct_answer)<aside class="article-answer"><h2>Jawaban singkat</h2><p>{{ $post->direct_answer }}</p></aside>@endif

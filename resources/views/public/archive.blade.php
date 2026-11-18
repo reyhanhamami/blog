@@ -28,7 +28,7 @@
     </form>
     @endif
     @if(isset($entity) && $entity instanceof \App\Models\Topic)
-        @php $relatedTopics = \App\Models\Topic::whereKeyNot($entity->id)->orderBy('name')->take(6)->get(); $topicPaths = \App\Models\LearningPath::where('status','published')->where('title','like','%'.$entity->name.'%')->take(3)->get(); @endphp
+        @php $relatedTopics = \App\Models\Topic::whereKeyNot($entity->id)->whereHas('posts', fn ($query) => $query->published()->where('noindex', false)->whereHas('topics', fn ($topics) => $topics->whereKey($entity->id)))->orderBy('name')->take(6)->get(); $topicPaths = \App\Models\LearningPath::where('status','published')->where('title','like','%'.$entity->name.'%')->take(3)->get(); @endphp
         @if($relatedTopics->isNotEmpty())<nav class="public-chip-row public-section" aria-label="Topik terkait">@foreach($relatedTopics as $relatedTopic)<a wire:navigate href="{{ route('topic.show', $relatedTopic) }}" class="public-chip">{{ $relatedTopic->name }}</a>@endforeach</nav>@endif
         @if($topicPaths->isNotEmpty())<section class="public-section"><h2 class="public-section-heading">Jalur belajar</h2><div class="public-card-grid">@foreach($topicPaths as $path)<a wire:navigate href="{{ route('path.show', $path) }}" class="public-card public-panel"><span class="public-badge">Jalur belajar</span><h3>{{ $path->title }}</h3><p>{{ $path->description }}</p></a>@endforeach</div></section>@endif
     @endif

@@ -83,6 +83,13 @@ class SettingsController extends Controller
                 File::ensureDirectoryExists(public_path('uploads/branding'));
                 $data[$kind]->move(public_path('uploads/branding'), $filename);
                 $newPaths[$kind] = 'uploads/branding/'.$filename;
+                if ($kind === 'logo') {
+                    try {
+                        app(\App\Support\PublicImage::class)->optimize(public_path($newPaths[$kind]));
+                    } catch (\Throwable $exception) {
+                        report($exception);
+                    }
+                }
             }
             DB::transaction(function () use ($data, $newPaths) {
                 foreach (self::FIELDS as $key => $label) {

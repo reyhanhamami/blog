@@ -104,19 +104,9 @@ function initPublicPage() {
         }
         toc.dataset.built = '1';
     }
-    if (document.querySelector('.article-content pre code')) {
-        import('prismjs').then(async ({ default: Prism }) => {
-            // PHP hooks require markup-templating before highlighting.
-            await import('prismjs/components/prism-markup-templating');
-            await Promise.all([
-                import('prismjs/components/prism-markup'), import('prismjs/components/prism-css'),
-                import('prismjs/components/prism-javascript'), import('prismjs/components/prism-typescript'),
-                import('prismjs/components/prism-php'), import('prismjs/components/prism-bash'),
-                import('prismjs/components/prism-json'), import('prismjs/components/prism-sql'),
-                import('prismjs/components/prism-python'), import('prismjs/components/prism-go'),
-            ]);
-            Prism.highlightAllUnder(document.querySelector('main') || document);
-        });
+    const codeRoot = document.querySelector('.article-content');
+    if (codeRoot?.querySelector('pre code')) {
+        import('./public-code').then(({ highlightCode }) => highlightCode(codeRoot));
     }
     document.querySelectorAll('form').forEach(form => {
         if (form.dataset.submitBound || form.method.toLowerCase() === 'get' || form.hasAttribute('wire:submit')) return;

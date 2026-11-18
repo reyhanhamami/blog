@@ -12,6 +12,7 @@ class Setting extends Model
     {
         $invalidate = function (Setting $setting) {
             Cache::forget('setting:'.$setting->key);
+            Cache::memo()->forget('settings:values');
             if (str_starts_with($setting->key, 'theme_')) {
                 PublicTheme::forget();
             }
@@ -30,7 +31,9 @@ class Setting extends Model
 
     public static function valueFor(string $key, string $default = ''): string
     {
-        return Cache::remember('setting:'.$key, 3600, fn () => (string) (static::query()->whereKey($key)->value('value') ?? $default));
+        $values = Cache::memo()->remember('settings:values', 3600, fn () => static::query()->pluck('value', 'key')->all());
+
+        return (string) ($values[$key] ?? $default);
     }
 
     public static function putValue(string $key, ?string $value): void

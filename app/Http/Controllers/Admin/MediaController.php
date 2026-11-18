@@ -55,6 +55,11 @@ class MediaController extends Controller
         $filename = Str::random(40).'.'.$file->guessExtension();
         $file->move(public_path($folder), $filename);
         $path = $folder.'/'.$filename;
+        try {
+            app(\App\Support\PublicImage::class)->optimize(public_path($path));
+        } catch (\Throwable $exception) {
+            report($exception); // Derivatives are optional; keep a successful original upload.
+        }
         $dimensions = @getimagesize(public_path($path));
         $media = Media::create(['path' => $path, 'mime_type' => mime_content_type(public_path($path)), 'size' => filesize(public_path($path)), 'width' => $dimensions[0] ?? null, 'height' => $dimensions[1] ?? null, 'alt_text' => $data['alt_text'], 'caption' => $data['caption'] ?? null, 'uploaded_by' => $request->user()->id]);
 

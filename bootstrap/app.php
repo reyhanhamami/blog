@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(LogLivewireTransportFailures::class);
+        $middleware->append(\App\Http\Middleware\PrivateRobots::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Livewire sends Accept: */*. Return JSON failures instead of login redirects.

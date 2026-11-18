@@ -16,6 +16,7 @@ use App\Services\ArticleNavigation;
 use App\Services\ContentDiscoveryService;
 use App\Services\HomepageContentService;
 use App\Services\QuizGrader;
+use App\Services\PublicSitemap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -158,7 +159,9 @@ class PublicContentController extends Controller
 
     private function archive($entity, string $prefix)
     {
-        return view('public.archive', ['title' => $prefix.': '.$entity->name, 'description' => $entity->description ?? $entity->short_bio ?? '', 'posts' => $entity->posts()->published()->with(['category', 'author'])->latest('published_at')->paginate(12), 'search' => null, 'noindex' => false, 'entity' => $entity]);
+        $posts = $entity->posts()->published()->where('noindex', false)->with(['category', 'author'])->latest('published_at')->paginate(12);
+
+        return view('public.archive', ['title' => $prefix.': '.$entity->name, 'description' => $entity->description ?? $entity->short_bio ?? '', 'posts' => $posts, 'search' => null, 'noindex' => $posts->total() === 0, 'entity' => $entity]);
     }
 
     public function post(string $slug, ArticleNavigation $navigation)
@@ -176,7 +179,8 @@ class PublicContentController extends Controller
             abort(404);
         }
         if (! request()->session()->has('viewed_post_'.$post->id)) {
-            $post->increment('views');
+            // Analytics is not an editorial update (schema and sitemap use updated_at).
+            Post::withoutTimestamps(fn () => $post->increment('views'));
             request()->session()->put('viewed_post_'.$post->id, true);
         }
         if (auth()->check()) {
@@ -232,29 +236,20 @@ class PublicContentController extends Controller
         return view('public.course', compact('course'));
     }
 
-    public function sitemap()
+    public function sitemap(PublicSitemap $sitemap)
     {
-        $urls = collect([['url' => route('home'), 'lastmod' => now()->toAtomString()]]);
-        Post::published()->where('noindex', false)->select(['slug', 'updated_at'])->orderBy('id')->chunk(200, function ($posts) use ($urls) {
-            foreach ($posts as $post) {
-                $urls->push(['url' => url('/'.$post->slug), 'lastmod' => $post->updated_at->toAtomString()]);
-            }
-        });
-        foreach (['categories' => Category::class, 'tags' => Tag::class, 'topics' => Topic::class, 'authors' => Author::class] as $name => $class) {
-            foreach ($class::all(['slug', 'updated_at']) as $item) {
-                $urls->push(['url' => url('/'.['categories' => 'kategori', 'tags' => 'tag', 'topics' => 'topik', 'authors' => 'author'][$name].'/'.$item->slug), 'lastmod' => $item->updated_at->toAtomString()]);
-            }
-        }
-        foreach (Page::where('is_published', true)->get(['slug', 'updated_at']) as $page) {
-            $urls->push(['url' => url('/'.$page->slug), 'lastmod' => $page->updated_at->toAtomString()]);
-        }
+        return response()->view('public.sitemap', $sitemap->document())->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
 
-        return response()->view('public.sitemap', compact('urls'))->header('Content-Type', 'application/xml');
+    public function sitemapPart(PublicSitemap $sitemap, string $kind, int $page)
+    {
+        return response()->view('public.sitemap', $sitemap->document($kind, $page))->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 
     public function feed()
     {
-        $posts = Post::published()->latest('published_at')->take(20)->get();
+        $posts = Post::published()->where('noindex', false)->latest('published_at')
+            ->take(20)->get(['title', 'slug', 'published_at', 'excerpt']);
 
         return response()->view('public.feed', compact('posts'))->header('Content-Type', 'application/rss+xml');
     }
@@ -262,7 +257,7 @@ class PublicContentController extends Controller
     public function robots()
     {
         $body = config('app.env') === 'production'
-            ? "User-agent: *\nDisallow: /admin\nDisallow: /cari\nSitemap: ".url('/sitemap.xml')."\n"
+            ? "User-agent: *\nDisallow: /admin\nSitemap: ".url('/sitemap.xml')."\n"
             : "User-agent: *\nDisallow: /\n";
 
         return response($body, 200, ['Content-Type' => 'text/plain']);

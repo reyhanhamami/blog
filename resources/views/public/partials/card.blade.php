@@ -1,6 +1,6 @@
 <article class="public-card discovery-article-card">
     <a wire:navigate href="{{ route('post.show', $post->slug) }}" class="public-card-media" aria-label="Baca {{ $post->title }}">
-        @if($post->featured_image)<img src="{{ $post->featured_image }}" alt="{{ $post->featured_image_alt ?: $post->title }}" loading="lazy" width="640" height="360">
+        @if($post->featured_image)<img {{ \App\Support\PublicImage::sources($post->featured_image, '(max-width: 767px) 100vw, 400px', 960) }} alt="{{ $post->featured_image_alt ?: $post->title }}" loading="lazy" width="640" height="360" decoding="async">
         @else<div class="public-card-fallback" aria-hidden="true"><span>IDE. PANDUAN.<br><em>INSIGHTS.</em></span></div>@endif
     </a>
     <div class="public-card-body">

@@ -12,7 +12,7 @@
     </section>
     <div class="public-footer-inner">
         <div class="public-footer-intro">
-            <a wire:navigate href="{{ route('home') }}" class="public-brand public-footer-brand {{ $customLogo ? 'public-brand-custom' : '' }}" aria-label="Besofton Insights, beranda"><span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : 'public-brand-mark-default' }}"><img src="{{ $logoUrl }}" alt="Besofton" loading="lazy"></span>@unless($customLogo)<span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span>@endunless</a>
+            <a wire:navigate href="{{ route('home') }}" class="public-brand public-footer-brand {{ $customLogo ? 'public-brand-custom' : '' }}" aria-label="Besofton Insights, beranda"><span class="public-brand-mark {{ $customLogo ? 'public-brand-mark-custom' : 'public-brand-mark-default' }}"><img {{ \App\Support\PublicImage::sources($logoUrl, '120px', 320) }} alt="Besofton" {{ \App\Support\PublicImage::dimensions($logoUrl) }} loading="lazy"></span>@unless($customLogo)<span class="public-brand-text"><strong>BESOFTON</strong><small>MITRA PERTUMBUHAN DIGITAL CERDAS</small></span>@endunless</a>
             <p>Ide, panduan, dan strategi digital untuk terus tumbuh.</p>
             @if($socialLinks->isNotEmpty())
                 <div class="public-footer-social" aria-label="Media sosial Besofton">

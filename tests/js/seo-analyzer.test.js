@@ -8,6 +8,16 @@ test('normalizes Indonesian focus keyphrases across case, punctuation, and hyphe
     assert.equal(normalizeKeyphrase('cara-membuat-prompt-ai-untuk-coding'), 'cara membuat prompt ai untuk coding');
 });
 
+test('custom SEO titles render exactly while fallback site suffix is counted once', () => {
+    const custom = analyzeArticle(state({ seoTitle: 'Judul editorial yang sudah lengkap' }), facts());
+    assert.equal(custom.preview.title, 'Judul editorial yang sudah lengkap');
+    assert.equal(custom.titleLength, [...custom.preview.title].length);
+    const fallback = analyzeArticle(state(), facts());
+    assert.equal(fallback.preview.title, 'Cara Deploy Docker | Besofton Insights');
+    const branded = analyzeArticle(state({ title: 'Judul | Besofton Insights' }), facts());
+    assert.equal(branded.preview.title, 'Judul | Besofton Insights');
+});
+
 test('counts repeated whole phrases without matching word fragments', () => {
     assert.equal(countKeyphrase('Prompt AI. prompt-AI untuk coding; prompt ai.', 'prompt ai'), 3);
     assert.equal(countKeyphrase('pemrograman dan programmer', 'program'), 0);

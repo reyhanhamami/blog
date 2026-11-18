@@ -102,7 +102,7 @@ export function initSeoAnalyzer(form) {
         panel.querySelector('[data-analysis-preview-title]').textContent = analysis.preview.title;
         panel.querySelector('[data-analysis-preview-url]').textContent = `${state.siteUrl.replace(/\/$/, '')}/${analysis.preview.slug || 'slug-artikel'}`;
         panel.querySelector('[data-analysis-preview-description]').textContent = analysis.preview.description;
-        form.querySelector('[data-seo-title-meter]').textContent = `${analysis.titleLength} / 60 karakter termasuk nama situs`;
+        form.querySelector('[data-seo-title-meter]').textContent = `${analysis.titleLength} karakter pada judul publik; 30–60 hanya panduan`;
         form.querySelector('[data-seo-description-meter]').textContent = `${analysis.descriptionLength} / 160 karakter dengan fallback halaman publik`;
         showRules(analysis.results);
     }

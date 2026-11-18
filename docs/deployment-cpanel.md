@@ -33,3 +33,23 @@ Alur ini didukung oleh [panduan deployment Git cPanel](https://docs.cpanel.net/k
 Jika tema jatuh ke fallback Classic, periksa log `Invalid public theme configuration` dan pastikan commit serta source aplikasi berisi file konfigurasi/default yang lengkap. Lihat [catatan perbaikan konfigurasi tema](public-theme-configuration-fix.md). Mengedit warna dari CMS tetap tidak membutuhkan perintah cache/build manual.
 
 Untuk error Livewire update, lihat [audit transport HTTP 405](livewire-transport.md). Pastikan `APP_DEBUG=false` pada production dan pertahankan APP_KEY existing. Update deployment tidak boleh menjalankan key:generate. `.htaccess` mengarahkan canonical redirect halaman hanya untuk GET/HEAD agar POST Livewire tidak berubah menjadi GET.
+
+## Release Phase 10 — SEO dan performa
+
+Lihat [audit SEO/performa](seo-performance-audit.md) dan [panduan Search Console](google-indexing-guide.md). Phase ini tidak menambah migration, dependency PHP, Redis, atau Node runtime di server. Build Vite dilakukan di Windows lalu sertakan manifest dan aset hasil build. Pertahankan aset hash versi sebelumnya selama masa transisi agar halaman/tab yang masih terbuka tidak mendapat 404 saat memuat chunk lama. Jangan unggah database, HTML snapshot, cache, atau fixture `storage/app/seo-audit` dari mesin audit.
+
+Tidak ada deploy otomatis dalam pengerjaan Phase 10. `.cpanel.yml` existing tetap utuh; task existing masih memiliki `migrate --force --seed`. Phase ini sendiri tidak memerlukan seeding/migration. Sebelum operator memilih **Deploy HEAD Commit**, tinjau task tersebut sesuai kebijakan release hosting. Jangan jalankan DemoSeeder, `migrate:fresh`, atau mengganti APP_KEY/`.env` development pada production. Source audit tidak mengubah `.env`.
+
+Periksa melalui File Manager bahwa hosting memakai PHP 8.4, `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://blog.besofton.id`, dan config cache sesuai. Snapshot production sebelum perbaikan memuat `livewire.js` tidak diminifikasi (~554 KB). Implementasi vendor memilih versi tersebut ketika `app.debug` aktif; nilai environment/cache server belum dibaca langsung. Konfirmasi konfigurasi dan rebuild config cache memakai fasilitas cPanel existing. Source tidak menonaktifkan Livewire/Alpine yang dibutuhkan navbar, navigasi, newsletter, dan kuis.
+
+Varian gambar memakai GD WebP jika tersedia; file asli dan URL aslinya tetap dipertahankan. Upload Media Library/logo baru mencoba membuat varian secara otomatis. Untuk gambar existing, operator dapat menjalankan **sekali** melalui cPanel Cron Jobs (tanpa SSH):
+
+```text
+/opt/cpanel/ea-php84/root/usr/bin/php /home/zfoeasqc/public_html/blog/artisan media:optimize-public >> /home/zfoeasqc/public_html/blog/storage/logs/media-optimize.log 2>&1
+```
+
+Hapus jadwal cron setelah eksekusi selesai; tidak perlu menjalankan terus-menerus. Perintah hanya membuat file terpisah di `public/uploads/optimized`, tanpa menghapus original atau mengubah database artikel. Periksa ruang disk, izin tulis, hasil log, serta dukungan GD WebP hosting. Pemrosesan melewati GIF, animated WebP, JPEG berorientasi EXIF selain normal, gambar >8 megapiksel, dan gambar yang melampaui anggaran memori. Jika GD/varian tidak tersedia, rendering memakai gambar original. Ini fallback kompatibilitas; penghematan ukuran untuk upload lama baru berlaku sesudah varian tersedia. HTML request tidak melakukan konversi gambar.
+
+`.htaccess` menambahkan kompresi teks bila `mod_deflate` tersedia dan cache immutable hanya untuk nama aset Vite/varian WebP berversi. HTML sesi, payload Livewire, data personalized, dan original upload yang mutable tidak mendapat aturan cache publik ini. Server production menampilkan `nginx`; frontend/proxy bisa mengabaikan aturan Apache. Verifikasi `Content-Encoding` dan `Cache-Control` setelah release, atau minta penyedia hosting memasang aturan ekuivalen **khusus static assets**. Hindari cache HTML authenticated.
+
+Setelah deploy manual, periksa endpoint dan metadata menurut panduan Search Console, gambar di mobile/desktop, navbar/filter/kuis/bookmark/newsletter, serta editor CMS. Ulangi Lighthouse minimal tiga run per URL/perangkat dengan kondisi sama; laporkan median. Hasil preview SQLite lokal tidak membuktikan target production tercapai. Rollback source/manifest bila smoke test gagal; pertahankan upload original dan data production.

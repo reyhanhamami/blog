@@ -2,7 +2,7 @@
 @section('seo_title', $context === 'category' ? $currentCategory->name.' | Besofton Insights' : 'Cari Insight | Besofton Insights')
 @section('seo_description', $context === 'category' ? ($currentCategory->description ?: 'Artikel tentang '.$currentCategory->name.' di Besofton Insights.') : 'Cari artikel, tutorial, dan materi belajar dari Besofton Insights.')
 @section('canonical', $context === 'category' ? route('category.show', $currentCategory) : route('search'))
-@section('robots', $context === 'category' ? 'index,follow' : 'noindex,follow')
+@section('robots', $context === 'category' && $posts->total() > 0 && !array_diff(array_keys(request()->query()), ['page']) ? 'index,follow' : 'noindex,follow')
 @push('head')
 @if($context === 'category')
     @php $breadcrumbSchema = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [['@type' => 'ListItem', 'position' => 1, 'name' => 'Beranda', 'item' => route('home')], ['@type' => 'ListItem', 'position' => 2, 'name' => 'Kategori', 'item' => route('categories.index')], ['@type' => 'ListItem', 'position' => 3, 'name' => $currentCategory->name, 'item' => route('category.show', $currentCategory)]]]; @endphp
