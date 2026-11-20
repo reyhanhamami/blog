@@ -1,6 +1,7 @@
 import { initMediaGallery, safeImageUrl, uploadMedia } from './media-library';
 import { initSeoAnalyzer } from './admin/seo-analyzer-ui';
 import { initAnalyzerPresentation } from './admin/workspace';
+import { initArticleSave } from './article-save';
 
 const slugify = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -243,6 +244,7 @@ export function initArticleForm() {
     form.querySelectorAll('[name="og_image_mode"]').forEach(input => listen(input, 'change', syncOgMode));
     listen(form, 'submit', syncOgMode);
     syncOgMode();
+    const saving = initArticleSave(form);
 
-    return { destroy() { presentation.destroy(); analyzer.destroy(); abort.abort(); gallery.destroy(); releaseObjectUrl(); if (taxonomy.open) taxonomy.close(); if (picker.open) picker.close(); } };
+    return { destroy() { saving.destroy(); presentation.destroy(); analyzer.destroy(); abort.abort(); gallery.destroy(); releaseObjectUrl(); if (taxonomy.open) taxonomy.close(); if (picker.open) picker.close(); } };
 }

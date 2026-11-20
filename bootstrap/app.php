@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\LogArticleSaveFailures;
 use App\Http\Middleware\LogLivewireTransportFailures;
 use App\Http\Middleware\PrivateRobots;
 use App\Http\Middleware\PublicVisitReceipt;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [PublicVisitReceipt::class]);
         $middleware->append(LogLivewireTransportFailures::class);
+        $middleware->append(LogArticleSaveFailures::class);
         $middleware->append(PrivateRobots::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

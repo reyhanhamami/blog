@@ -100,7 +100,7 @@ class PostController extends Controller
         Gate::authorize('create', Post::class);
         $post = $writer->save(null, $this->validated($request), $request->user());
 
-        return redirect()->route('admin.posts.edit', $post)->with('success', 'Artikel berhasil dibuat.');
+        return $this->savedResponse($request, $post, 'Artikel berhasil dibuat.');
     }
 
     public function edit(Post $post)
@@ -123,7 +123,7 @@ class PostController extends Controller
         }
         $writer->save($post, $this->validated($request, $post), $request->user());
 
-        return redirect()->route('admin.posts.edit', $post)->with('success', 'Artikel berhasil diperbarui.');
+        return $this->savedResponse($request, $post, 'Artikel berhasil diperbarui.');
     }
 
     public function destroy(Post $post)
@@ -211,6 +211,27 @@ class PostController extends Controller
     }
 
     private function validated(Request $request, ?Post $post = null): array
+    {
+        try {
+            return $this->validateArticle($request, $post);
+        } catch (ValidationException $exception) {
+            // A missing/stale action referrer must never become a GET update URL.
+            throw $exception->redirectTo($post ? route('admin.posts.edit', $post) : route('admin.posts.create'));
+        }
+    }
+
+    private function savedResponse(Request $request, Post $post, string $message)
+    {
+        if ($request->expectsJson()) {
+            $request->session()->flash('success', $message);
+
+            return response()->json(['redirect' => route('admin.posts.edit', $post)]);
+        }
+
+        return redirect()->route('admin.posts.edit', $post)->with('success', $message);
+    }
+
+    private function validateArticle(Request $request, ?Post $post = null): array
     {
         $statuses = $request->user()->can('articles.publish') ? ['draft', 'pending_review', 'scheduled', 'published', 'archived'] : ['draft', 'pending_review'];
         $data = $request->validate([

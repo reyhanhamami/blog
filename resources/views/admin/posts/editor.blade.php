@@ -1,4 +1,4 @@
-<div class="article-editor-field" data-article-editor-field data-media-upload-url="{{ route('admin.media.store') }}">
+<div class="article-editor-field" data-article-editor-field data-draft-owner="{{ auth()->id() }}" data-media-upload-url="{{ route('admin.media.store') }}">
     <label class="form-label" for="article-editor">Konten HTML</label>
     <p class="mb-2 text-xs text-slate-500">Judul artikel sudah menjadi H1 di halaman publik. Mulai bagian utama dengan H2.</p>
     <div class="article-editor-shell" data-editor-shell>

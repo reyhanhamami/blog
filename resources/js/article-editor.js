@@ -1,5 +1,6 @@
 import { initMediaGallery, uploadMedia } from './media-library';
 import { headingStructure } from './admin/heading-structure.js';
+import { articleDraft } from './article-draft.js';
 
 const ALLOWED_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'U', 'S', 'DEL', 'BLOCKQUOTE', 'PRE', 'CODE', 'A', 'IMG', 'FIGURE', 'FIGCAPTION', 'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD', 'BR', 'HR']);
 const DISCARD_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'FORM', 'INPUT', 'BUTTON', 'SVG', 'MATH', 'TEMPLATE', 'NOSCRIPT']);
@@ -15,6 +16,7 @@ function cleanHtml(html) {
     template.innerHTML = html;
     const clean = parent => {
         for (const child of [...parent.childNodes]) {
+            if (child.nodeType === Node.COMMENT_NODE) { child.remove(); continue; }
             if (child.nodeType !== Node.ELEMENT_NODE) continue;
             if (DISCARD_TAGS.has(child.tagName)) { child.remove(); continue; }
             if (['B', 'I', 'STRIKE'].includes(child.tagName)) {
@@ -57,6 +59,12 @@ function cleanHtml(html) {
             if (child.tagName === 'IMG' && !child.hasAttribute('src')) { child.remove(); continue; }
             if (child.tagName === 'CODE' && /^language-(text|php|javascript|typescript|html|css|bash|json|sql|python|go)$/.test(attributes.class || '')) child.className = attributes.class;
             if (child.tagName === 'FIGURE' && /^article-image article-image--(small|medium|large|full) article-image--(left|center|right)$/.test(attributes.class || '')) child.className = attributes.class;
+            if (['TH', 'TD'].includes(child.tagName)) {
+                for (const key of ['colspan', 'rowspan']) if (/^[1-9][0-9]{0,2}$/.test(attributes[key] || '')) child.setAttribute(key, attributes[key]);
+                if (child.tagName === 'TH' && ['col', 'row', 'colgroup', 'rowgroup'].includes(attributes.scope)) child.setAttribute('scope', attributes.scope);
+            }
+            if (child.tagName === 'OL' && /^-?[0-9]{1,6}$/.test(attributes.start || '')) child.setAttribute('start', attributes.start);
+            if (child.tagName === 'LI' && /^-?[0-9]{1,6}$/.test(attributes.value || '')) child.setAttribute('value', attributes.value);
             if (/^(P|H[1-6]|BLOCKQUOTE)$/.test(child.tagName) && /^article-align-(left|center|right|justify)$/.test(attributes.class || '')) child.className = attributes.class;
             clean(child);
         }
@@ -81,7 +89,7 @@ export function initArticleEditor() {
     const abort = new AbortController();
     const listen = (target, name, callback, options = {}) => target?.addEventListener(name, callback, { ...options, signal: abort.signal });
     const get = selector => field.querySelector(selector);
-    const key = `besofton-draft:${location.pathname}`;
+    const draft = articleDraft(field.dataset.draftOwner, location.pathname);
     let dirty = false;
     let sourceMode = false;
     let timer;
@@ -181,14 +189,29 @@ export function initArticleEditor() {
         status.textContent = 'Perubahan belum disimpan';
         updateHistory();
         clearTimeout(timer);
-        timer = setTimeout(() => { sync(); localStorage.setItem(key, source.value); status.textContent = 'Draf lokal tersimpan. Tekan Simpan untuk menyimpan ke CMS.'; }, 1200);
+        timer = setTimeout(() => { sync(); status.textContent = draft.write(source.value) ? 'Draf tab ini tersimpan sementara (24 jam). Tekan Simpan untuk menyimpan ke CMS.' : 'Draf browser tidak tersedia. Salin konten sebagai cadangan sebelum meninggalkan editor.'; }, 1200);
         clearTimeout(statsTimer);
         statsTimer = setTimeout(updateStats, 160);
     }
 
     function insertHtml(html) {
         restoreSelection();
-        document.execCommand('insertHTML', false, cleanHtml(html));
+        const selection = window.getSelection();
+        const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+        // Chrome can retain the old H1 wrapper when replacing an entire article,
+        // producing invalid H1/P nesting. Replace the selected document fragment.
+        const selected = range?.cloneContents();
+        if (range && !range.collapsed && editor.contains(range.commonAncestorContainer)
+            && selected.textContent === editor.textContent
+            && selected.querySelectorAll('img,table,hr').length === editor.querySelectorAll('img,table,hr').length) {
+            const template = document.createElement('template');
+            template.innerHTML = cleanHtml(html);
+            editor.replaceChildren(template.content);
+            range.selectNodeContents(editor);
+            range.collapse(false);
+            selection.removeAllRanges(); selection.addRange(range);
+            savedRange = range.cloneRange();
+        } else document.execCommand('insertHTML', false, cleanHtml(html));
         decorateImages();
         change();
     }
@@ -373,13 +396,13 @@ export function initArticleEditor() {
     }
 
     async function restoreDraft() {
-        const local = localStorage.getItem(key);
+        const local = draft.read();
         if (!local || local === snapshot() || local === source.value) return;
         const Swal = (await import('sweetalert2')).default;
         const result = await Swal.fire({ title: 'Pulihkan draf lokal?', text: 'Ada perubahan yang belum disimpan di browser ini.', showCancelButton: true, confirmButtonText: 'Pulihkan', cancelButtonText: 'Abaikan' });
         if (!field.isConnected) return;
         if (result.isConfirmed) { editor.innerHTML = cleanHtml(local); decorateYoutube(); decorateImages(); change(); }
-        else localStorage.removeItem(key);
+        else draft.remove();
     }
 
     listen(editor, 'input', change);
@@ -430,11 +453,13 @@ export function initArticleEditor() {
     listen(document, 'keydown', event => { if (event.key === 'Escape' && shell.classList.contains('editor-focus')) { shell.classList.remove('editor-focus'); get('[data-editor-command="focus"]').setAttribute('aria-pressed', 'false'); } });
     listen(sourceArea, 'input', change);
     listen(editor, 'paste', event => {
+        if (!event.clipboardData) return;
+        rememberSelection();
         const file = [...(event.clipboardData?.files || [])].find(item => item.type.startsWith('image/'));
         if (file) { event.preventDefault(); openDialog('image'); const input = get('[data-editor-image-file]'); if (input) { const transfer = new DataTransfer(); transfer.items.add(file); input.files = transfer.files; input.dispatchEvent(new Event('change')); } return; }
         event.preventDefault();
         const pre = selectionElement()?.closest('pre');
-        if (pre) { document.execCommand('insertText', false, event.clipboardData.getData('text/plain')); return; }
+        if (pre) { document.execCommand('insertText', false, event.clipboardData.getData('text/plain')); change(); return; }
         const html = event.clipboardData.getData('text/html');
         if (html) { insertHtml(html); if (/src\s*=\s*["']?data:image\//i.test(html)) status.textContent = 'Gambar tertanam tidak disimpan. Unggah melalui Media Library.'; }
         else {
@@ -482,7 +507,10 @@ export function initArticleEditor() {
     listen(get('[data-editor-code-language]'), 'change', event => { if (selectedCode) { selectedCode.className = `language-${event.target.value}`; change(); } });
     listen(get('[data-editor-image-file]'), 'change', event => { if (previewUrl) URL.revokeObjectURL(previewUrl); chosenMedia = null; previewUrl = event.target.files?.[0] ? URL.createObjectURL(event.target.files[0]) : null; showImagePreview(previewUrl); });
     listen(get('[data-editor-image-alt]'), 'input', event => { get('[data-editor-alt-warning]').hidden = !!event.target.value.trim(); });
-    listen(form, 'submit', () => { sync(); dirty = false; localStorage.removeItem(key); }, { capture: true });
+    const prepareSave = () => { clearTimeout(timer); sync(); draft.write(source.value); };
+    listen(form, 'submit', prepareSave, { capture: true });
+    listen(form, 'article:before-save', prepareSave);
+    listen(form, 'article:saved', () => { clearTimeout(timer); dirty = false; draft.remove(); status.textContent = 'Artikel tersimpan di CMS.'; });
     get('[data-editor-command="undo"]').disabled = true;
     get('[data-editor-command="redo"]').disabled = true;
     decorateYoutube(); decorateImages(); sync(); updateStats(); restoreDraft();

@@ -108,6 +108,10 @@ class HtmlSanitizer
                     'img' => in_array($name, ['src', 'alt', 'width', 'height'], true) && ($name !== 'src' || $this->safeUrl($value)) && (! in_array($name, ['width', 'height'], true) || preg_match('/^[1-9][0-9]{0,3}$/', $value)),
                     'code' => $name === 'class' && preg_match('/^language-(?:php|javascript|typescript|html|css|bash|json|sql|python|go|text)$/', $value),
                     'figure' => $name === 'class' && $this->safeFigureClass($value),
+                    'th', 'td' => (in_array($name, ['colspan', 'rowspan'], true) && preg_match('/^[1-9][0-9]{0,2}$/', $value))
+                        || ($tag === 'th' && $name === 'scope' && in_array($value, ['col', 'row', 'colgroup', 'rowgroup'], true)),
+                    'ol' => $name === 'start' && preg_match('/^-?[0-9]{1,6}$/', $value),
+                    'li' => $name === 'value' && preg_match('/^-?[0-9]{1,6}$/', $value),
                     'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote' => $name === 'class' && preg_match('/^article-align-(?:left|center|right|justify)$/', $value),
                     default => false,
                 };
