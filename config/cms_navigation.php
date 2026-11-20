@@ -26,7 +26,7 @@ return [
         ['label' => 'Editorial Calendar', 'route' => 'admin.editorial-calendar', 'active' => ['admin.editorial-calendar'], 'permissions' => ['editorial-calendar.view']],
     ],
     'SEO & Insights' => [
-        ['label' => 'Analytics', 'route' => 'admin.analytics', 'active' => ['admin.analytics'], 'permissions' => ['analytics.view']],
+        ['label' => 'Visitor Analytics', 'route' => 'admin.analytics', 'active' => ['admin.analytics', 'admin.analytics.*'], 'permissions' => ['analytics.view'], 'superadmin' => true],
         ['label' => 'Redirects', 'route' => 'admin.redirects.index', 'active' => ['admin.redirects.*'], 'permissions' => ['redirects.view']],
     ],
     'Management' => [

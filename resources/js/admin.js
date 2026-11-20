@@ -4,6 +4,16 @@ import { publicThemeEditor } from './public-theme';
 window.publicThemeEditor = publicThemeEditor;
 import { initCmsShell } from './admin/workspace';
 
+let analyticsModule;
+async function initAnalytics() {
+    if (!document.querySelector('[data-analytics-chart]')) return;
+    analyticsModule ||= await import('./admin/analytics');
+    analyticsModule.mountAnalyticsCharts();
+}
+document.addEventListener('DOMContentLoaded', initAnalytics);
+document.addEventListener('livewire:navigated', initAnalytics);
+document.addEventListener('livewire:navigating', () => analyticsModule?.destroyAnalyticsCharts());
+
 let cmsShell;
 const initShell = () => { cmsShell?.destroy(); cmsShell = initCmsShell(); };
 document.addEventListener('DOMContentLoaded', initShell);

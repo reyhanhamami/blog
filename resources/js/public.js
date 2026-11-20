@@ -1,3 +1,5 @@
+import './public-analytics';
+
 let publicHeaderObserver;
 
 function observePublicHeaderHeight() {

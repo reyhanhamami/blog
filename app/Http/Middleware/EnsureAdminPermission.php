@@ -26,7 +26,7 @@ class EnsureAdminPermission
         if ($action === 'dashboard') {
             return ['dashboard.view'];
         }
-        if ($action === 'analytics') {
+        if ($action === 'analytics' || str_starts_with($action, 'analytics.')) {
             return ['analytics.view'];
         }
         if ($action === 'editorial-calendar') {

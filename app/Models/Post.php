@@ -14,6 +14,8 @@ class Post extends Model
 
     protected $guarded = ['id'];
 
+    protected $hidden = ['views', 'legacy_views', 'tracked_views', 'last_viewed_at', 'period_views', 'period_unique'];
+
     protected function casts(): array
     {
         return ['published_at' => 'datetime', 'scheduled_at' => 'datetime', 'review_due_at' => 'datetime', 'is_featured' => 'boolean', 'noindex' => 'boolean', 'allow_comments' => 'boolean'];

@@ -4,6 +4,8 @@ use App\Models\Post;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('analytics:prune')->dailyAt('02:20')->timezone('Asia/Jakarta')->withoutOverlapping();
+
 Schedule::call(function () {
     Post::where('status', 'scheduled')->where('scheduled_at', '<=', now())->orderBy('id')->chunkById(100, function ($posts) {
         foreach ($posts as $post) {

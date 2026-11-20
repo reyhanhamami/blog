@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\Quiz;
 use App\Models\Tag;
 use App\Models\Topic;
+use App\Services\Analytics\AnalyticsReport;
 use App\Services\Content\PostWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,12 @@ class PostController extends Controller
     {
         Gate::authorize('update', $post);
 
-        return view('admin.posts.form', $this->formData($post));
+        $data = $this->formData($post);
+        if (request()->user()->role === 'superadmin') {
+            $data['articleStatistics'] = app(AnalyticsReport::class)->article($post);
+        }
+
+        return view('admin.posts.form', $data);
     }
 
     public function update(Request $request, Post $post, PostWriter $writer)
@@ -158,7 +164,7 @@ class PostController extends Controller
         Gate::authorize('view', $post);
         Gate::authorize('create', Post::class);
         $copy = DB::transaction(function () use ($post) {
-            $copy = $post->replicate(['views', 'published_at', 'scheduled_at']);
+            $copy = $post->replicate(['views', 'legacy_views', 'tracked_views', 'last_viewed_at', 'published_at', 'scheduled_at']);
             $copy->title = $post->title.' (Salinan)';
             $copy->slug = Str::slug($post->slug.'-salinan-'.Str::lower(Str::random(5)));
             $copy->status = 'draft';

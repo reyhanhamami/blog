@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\CourseContentController;
 use App\Http\Controllers\Admin\LearningPathItemController;
@@ -20,8 +21,10 @@ use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ReaderController;
+use App\Http\Controllers\VisitController;
 use App\Http\Middleware\EnsureAdminPermission;
 use App\Http\Middleware\EnsureCmsAccess;
+use App\Http\Middleware\RequireSuperadmin;
 use App\Models\Course;
 use App\Models\Post;
 use App\Models\Quiz;
@@ -67,7 +70,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
             'Draft' => $posts()->where('status', 'draft')->count(), 'Menunggu Review' => $posts()->where('status', 'pending_review')->count(),
             'Terjadwal' => $posts()->where('status', 'scheduled')->count(),
         ]);
-        if ($user->can('analytics.view')) {
+        if ($user->role === 'superadmin') {
             $metrics += ['Penulis' => User::whereIn('role', ['author', 'editor'])->count(), 'Video' => Video::count(), 'Kuis' => Quiz::count(), 'Kelas' => Course::count(), 'Tayangan' => Post::sum('views'), 'Percobaan kuis' => DB::table('quiz_attempts')->count(), 'Masukan pembaca' => DB::table('article_feedback')->count()];
         }
 
@@ -112,11 +115,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
     Route::get('/redirects', [RedirectController::class, 'index'])->name('redirects.index');
     Route::post('/redirects', [RedirectController::class, 'store'])->name('redirects.store');
     Route::delete('/redirects/{redirect}', [RedirectController::class, 'destroy'])->name('redirects.destroy');
-    Route::get('/analytics', function () {
-        Gate::authorize('manage-content');
-
-        return view('admin.analytics', ['views' => Post::sum('views'), 'attempts' => DB::table('quiz_attempts')->count(), 'helpful' => DB::table('article_feedback')->where('helpful', true)->count(), 'top' => Post::orderByDesc('views')->take(10)->get()]);
-    })->name('analytics');
+    Route::middleware(RequireSuperadmin::class)->group(function () {
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+        Route::get('/analytics/export', [AnalyticsController::class, 'export'])->name('analytics.export');
+        Route::get('/analytics/print', [AnalyticsController::class, 'print'])->name('analytics.print');
+    });
     Route::get('/editorial-calendar', function () {
         Gate::authorize('manage-content');
         $events = Post::whereIn('status', ['scheduled', 'published'])->get()->map(fn ($post) => ['title' => $post->title, 'start' => ($post->scheduled_at ?: $post->published_at)?->toDateString(), 'url' => Gate::allows('update', $post) ? route('admin.posts.edit', $post) : (Gate::allows('view', $post) ? route('admin.posts.preview', $post) : null), 'color' => $post->status === 'scheduled' ? '#d97706' : '#4338ca'])->filter(fn ($event) => $event['start'])->values();
@@ -177,6 +180,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', EnsureCmsAccess::cla
         }
     }
 });
+
+Route::post('/visits/confirm', VisitController::class)->middleware('throttle:120,1')->name('visits.confirm');
 
 Route::get('/', [PublicContentController::class, 'home'])->name('home');
 Route::get('/cari', [PublicContentController::class, 'search'])->name('search');

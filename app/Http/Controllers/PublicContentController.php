@@ -178,11 +178,6 @@ class PublicContentController extends Controller
             }
             abort(404);
         }
-        if (! request()->session()->has('viewed_post_'.$post->id)) {
-            // Analytics is not an editorial update (schema and sitemap use updated_at).
-            Post::withoutTimestamps(fn () => $post->increment('views'));
-            request()->session()->put('viewed_post_'.$post->id, true);
-        }
         if (auth()->check()) {
             DB::table('reading_history')->updateOrInsert(['user_id' => auth()->id(), 'post_id' => $post->id], ['last_read_at' => now()]);
         }

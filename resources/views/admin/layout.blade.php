@@ -16,7 +16,7 @@
 </head>
 <body data-cms="1" class="admin-app bg-slate-50 text-slate-900">
 @php
-    $sidebarGroups = collect(config('cms_navigation'))->map(fn ($items) => collect($items)->filter(fn ($item) => auth()->user()->canAny($item['permissions']))->values())->filter(fn ($items) => $items->isNotEmpty());
+    $sidebarGroups = collect(config('cms_navigation'))->map(fn ($items) => collect($items)->filter(fn ($item) => auth()->user()->canAny($item['permissions']) && (!($item['superadmin'] ?? false) || auth()->user()->role === 'superadmin'))->values())->filter(fn ($items) => $items->isNotEmpty());
 @endphp
 <div id="nav-progress" class="fixed left-0 top-0 z-50 hidden h-1 w-full animate-pulse bg-indigo-600"></div>
 <div class="admin-shell min-h-screen" data-cms-shell data-sidebar-open="false" x-data="{ profileOpen: false }" @keydown.escape.window="profileOpen = false">

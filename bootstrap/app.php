@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\LogLivewireTransportFailures;
 use App\Http\Middleware\PrivateRobots;
+use App\Http\Middleware\PublicVisitReceipt;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [PublicVisitReceipt::class]);
         $middleware->append(LogLivewireTransportFailures::class);
         $middleware->append(PrivateRobots::class);
     })

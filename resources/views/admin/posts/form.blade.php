@@ -3,6 +3,7 @@
 @section('content')
 <div class="mb-6"><a wire:navigate href="{{ route('admin.posts.index') }}" class="text-sm text-indigo-700">← Kembali ke artikel</a><h1 class="mt-2 text-3xl font-bold">{{ $post->exists ? 'Edit artikel' : 'Buat artikel' }}</h1></div>
 @if($errors->any())<div class="mb-5 rounded-lg bg-red-50 p-4 text-sm text-red-800">Periksa kembali isian formulir.</div>@endif
+@if(auth()->user()->role === 'superadmin' && isset($articleStatistics))@include('admin.posts.statistics', ['stats' => $articleStatistics])@endif
 <div class="admin-post-layout">
 <div class="admin-analysis-launch"><button type="button" class="btn-secondary" data-analysis-open aria-controls="article-analyzer" aria-expanded="false" aria-haspopup="dialog">SEO &amp; AEO</button></div>
 <form method="post" action="{{ $post->exists ? route('admin.posts.update', $post) : route('admin.posts.store') }}" class="admin-post-form" data-post-form>@csrf @if($post->exists) @method('PATCH') @endif
